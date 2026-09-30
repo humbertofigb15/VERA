@@ -1,29 +1,52 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../services/authService";
+import { loginUser, verify2FA } from "../services/authService";
 import "./Login.css";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [tempToken, setTempToken] = useState(null); // set when the server asks for a 2FA code
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
+
+  const finishLogin = (data) => {
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    navigate("/dashboard");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      const data = await loginUser(username, password);
+      if (tempToken) {
+        // Step 2: verify the 6-digit code
+        const data = await verify2FA(tempToken, code);
+        finishLogin(data);
+      } else {
+        // Step 1: username + password
+        const data = await loginUser(username, password);
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      navigate("/dashboard");
-    } catch (error) {
-      setError(error.message);
+        if (data.requires2FA) {
+          setTempToken(data.tempToken);
+        } else {
+          finishLogin(data);
+        }
+      }
+    } catch (err) {
+      setError(err.message);
     }
+  };
+
+  const handleBack = () => {
+    setTempToken(null);
+    setCode("");
+    setPassword("");
+    setError("");
   };
 
   return (
@@ -45,33 +68,64 @@ function Login() {
         </p>
 
         <p className="login-message">
-          Inicia sesión para acceder al portafolio y a tus auditorías.
+          {tempToken
+            ? "Ingresa el código de 6 dígitos de tu aplicación de autenticación."
+            : "Inicia sesión para acceder al portafolio y a tus auditorías."}
         </p>
 
         <form onSubmit={handleSubmit}>
-          <label>Usuario</label>
+          {tempToken ? (
+            <>
+              <label>Código de verificación</label>
 
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Usuario"
-          />
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                placeholder="123456"
+                autoFocus
+              />
+            </>
+          ) : (
+            <>
+              <label>Usuario</label>
 
-          <label>Contraseña</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Usuario"
+              />
 
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Contraseña"
-          />
+              <label>Contraseña</label>
+
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Contraseña"
+              />
+            </>
+          )}
 
           {error && <p className="error">{error}</p>}
 
           <button type="submit">
-            Iniciar sesión
+            {tempToken ? "Verificar" : "Iniciar sesión"}
           </button>
+
+          {tempToken && (
+            <button
+              type="button"
+              className="back-button"
+              onClick={handleBack}
+            >
+              Volver
+            </button>
+          )}
         </form>
 
         <p className="create-account">

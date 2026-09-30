@@ -6,6 +6,8 @@ const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
+app.set("trust proxy", 1); // 1 = one proxy hop in front of your app
+
 app.use(cors());
 app.use(express.json());
 
