@@ -1,106 +1,11 @@
-import { useNavigate } from "react-router-dom";
+import Sidebar from "../components/Sidebar";
 import "./Dashboard.css";
 
 function Dashboard() {
-  const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/");
-  };
-
-  const canSeeReports = user?.role !== "AUDITOR";
-
-  const canSeeUsers =
-    user?.role === "SUPER_ADMIN" ||
-    user?.role === "DIRECTOR";
-
-  const canSeeRoles =
-    user?.role === "SUPER_ADMIN";
-
   return (
     <div className="dashboard-layout">
 
-      <aside className="sidebar">
-        <div className="sidebar-brand">
-          <div className="sidebar-logo">
-            V<span>✓</span>
-          </div>
-
-          <div>
-            <h2>VERA</h2>
-            <p>
-              VERIFICACIÓN · EVIDENCIA ·
-              <br />
-              RIESGO · AUDITORÍA
-            </p>
-          </div>
-        </div>
-
-        <div className="nav-title">
-          NAVEGACIÓN
-        </div>
-
-        <nav>
-          <button className="nav-item active">
-            ▦
-            <span>Panel de Portafolio</span>
-          </button>
-
-          <button className="nav-item">
-            ▣
-            <span>Planificación</span>
-          </button>
-
-          <button className="nav-item">
-            □
-            <span>Trimestres</span>
-          </button>
-
-          {canSeeReports && (
-            <button className="nav-item">
-              ▤
-              <span>Reportes</span>
-            </button>
-          )}
-
-          {canSeeUsers && (
-            <button className="nav-item">
-              ♙
-              <span>Usuarios</span>
-            </button>
-          )}
-
-          {canSeeRoles && (
-            <button className="nav-item">
-              ⚙
-              <span>Roles y permisos</span>
-            </button>
-          )}
-        </nav>
-
-        <div className="sidebar-bottom">
-          <div className="user-info">
-            <div className="avatar">
-              {user?.name?.charAt(0)}
-            </div>
-
-            <div>
-              <strong>{user?.name}</strong>
-              <span>{user?.role}</span>
-            </div>
-          </div>
-
-          <button
-            className="logout-button"
-            onClick={logout}
-          >
-            ↪ Cerrar sesión
-          </button>
-        </div>
-      </aside>
+      <Sidebar active="dashboard" />
 
       <main className="dashboard-main">
 

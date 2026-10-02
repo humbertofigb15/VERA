@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { loginUser, verify2FA } from "../services/authService";
 import "./Login.css";
 
@@ -91,14 +91,16 @@ function Login() {
             </>
           ) : (
             <>
-              <label>Usuario</label>
+               <label>Correo institucional</label>
 
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Usuario"
+                placeholder="nombre@vera.local"
+                autoComplete="username"
               />
+
 
               <label>Contraseña</label>
 
@@ -129,7 +131,7 @@ function Login() {
         </form>
 
         <p className="create-account">
-          ¿Primera vez en VERA? <strong>Crear cuenta</strong>
+          ¿Primera vez en VERA? <Link to="/registro">Crear cuenta</Link>
         </p>
       </div>
     </div>

@@ -1,0 +1,53 @@
+/* HU-01 Registro. Reutiliza el diseño de Login.css */
+
+.password-rules {
+  list-style: none;
+  margin: 10px 0 2px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  font-size: 13px;
+  color: #8a96a2;
+  text-align: left;
+}
+
+.password-rules li {
+  display: flex;
+  gap: 6px;
+}
+
+.password-rules li.ok {
+  color: #0b8f80;
+}
+
+.login-card button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.register-done {
+  margin-top: 28px;
+  text-align: center;
+}
+
+.register-done h2 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  color: #123f4d;
+}
+
+.register-done p {
+  margin: 0 0 24px;
+  color: #6b7784;
+  line-height: 1.5;
+}
+
+.register-back {
+  display: inline-block;
+  padding: 12px 18px;
+  border-radius: 9px;
+  background: #123f4d;
+  color: #ffffff;
+  text-decoration: none;
+}

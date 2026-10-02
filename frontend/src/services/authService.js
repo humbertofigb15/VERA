@@ -31,3 +31,20 @@ export const loginUser = async (username, password) => {
 
   return data;
 };
+
+// HU-01: registro propio. La cuenta queda pendiente de aprobación.
+export const registerUser = async ({ name, email, password }) => {
+  const response = await fetch(`${API_URL}/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "No se pudo enviar la solicitud.");
+  }
+
+  return data;
+};
