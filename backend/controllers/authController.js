@@ -10,7 +10,9 @@ const {
   INSTITUTIONAL_DOMAINS,
   isInstitutionalEmail,
   PASSWORD_RULE_MESSAGE,
-  isValidPassword
+  isValidPassword,
+  NAME_RULE_MESSAGE,
+  isValidName
 } = require("../config/accountRules");
 
 
@@ -211,13 +213,20 @@ const enable2FA = (req, res) => {
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const register = async (req, res) => {
-  const name = String(req.body.name || "").trim();
+  const name = String(req.body.name || "").trim().replace(/\s+/g, " ");
   const email = String(req.body.email || "").trim().toLowerCase();
   const password = String(req.body.password || "");
 
   if (!name) {
     return res.status(400).json({ message: "El nombre es obligatorio." });
   }
+
+  if (!isValidName(name)) {
+    return res.status(400).json({
+      message: NAME_RULE_MESSAGE
+    });
+  }
+
   if (!EMAIL_REGEX.test(email)) {
     return res.status(400).json({ message: "El correo no tiene un formato válido." });
   }
