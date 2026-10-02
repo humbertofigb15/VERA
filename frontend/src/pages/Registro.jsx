@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { registerUser } from "../services/authService";
-import { PASSWORD_CHECKS, INSTITUTIONAL_DOMAINS } from "../constants/accountRules";
+import { PASSWORD_CHECKS, INSTITUTIONAL_DOMAINS, validateName } from "../constants/accountRules";
 import "./Login.css";
 import "./Registro.css";
 
@@ -22,6 +22,13 @@ function Registro() {
     e.preventDefault();
     setError("");
 
+    const nameError = validateName(name);
+
+    if (nameError) {
+      setError(nameError);
+      return;
+    }
+
     if (!passwordOk) {
       setError("La contraseña no cumple todas las reglas.");
       return;
@@ -33,7 +40,8 @@ function Registro() {
 
     setSending(true);
     try {
-      await registerUser({ name, email, password });
+      const cleanName = name.trim().replace(/\s+/g, " ");
+      await registerUser({ name: cleanName, email, password });
       setSent(true);
     } catch (err) {
       setError(err.message);
@@ -80,7 +88,9 @@ function Registro() {
                 id="reg-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                placeholder="Nombre completo"
                 autoComplete="name"
+                maxLength={75}
                 required
               />
 
