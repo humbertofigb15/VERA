@@ -6,6 +6,7 @@ import {
   FileChartColumn,
   UserCog,
   ShieldCheck,
+  ScrollText,
   LogOut
 } from "lucide-react";
 import { ROLE_LABELS, USER_ADMIN_ROLES } from "../constants/roles";
@@ -16,7 +17,7 @@ const ICON_SIZE = 20;
 const ICON_STROKE = 1.75;
 
 // Menú lateral compartido por todas las pantallas.
-// active: "dashboard" | "planificacion" | "trimestres" | "reportes" | "usuarios" | "roles"
+// active: "dashboard" | "planificacion" | "trimestres" | "reportes" | "usuarios" | "roles" | "auditoria"
 function Sidebar({ active }) {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "null");
@@ -38,6 +39,7 @@ function Sidebar({ active }) {
     { id: "trimestres", label: "Trimestres", Icon: CalendarRange, show: true },
     { id: "reportes", label: "Reportes", Icon: FileChartColumn, show: canSeeReports },
     { id: "usuarios", label: "Usuarios", Icon: UserCog, path: "/usuarios", show: canSeeUsers },
+    { id: "auditoria", label: "Registro de actividad", Icon: ScrollText, path: "/auditoria", show: canSeeRoles },
     { id: "roles", label: "Roles y permisos", Icon: ShieldCheck, show: false }
   ];
 
