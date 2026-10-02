@@ -152,3 +152,14 @@
   color: #c0392b;
   font-size: 14px;
 }
+
+/* HU-01: enlace a registro */
+.create-account a {
+  color: #123f4d;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.create-account a:hover {
+  text-decoration: underline;
+}

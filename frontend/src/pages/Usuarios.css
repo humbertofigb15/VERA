@@ -1,0 +1,272 @@
+/* HU-01 Administración de usuarios. Reutiliza el layout de Dashboard.css */
+
+.users-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.05),
+    0 6px 15px rgba(0, 0, 0, 0.04);
+}
+
+.users-card h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  color: #123f4d;
+}
+
+.users-muted {
+  margin: 0 0 22px;
+  color: #707d8a;
+  font-size: 15px;
+}
+
+/* ---------- lista ---------- */
+
+.users-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.users-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 18px 20px;
+  border: 1px solid #edf0f2;
+  border-radius: 12px;
+}
+
+.users-row.inactive {
+  background: #f8f9fa;
+}
+
+.users-row.inactive .users-identity strong {
+  color: #8a96a2;
+}
+
+.users-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 220px;
+}
+
+.users-identity strong {
+  font-size: 17px;
+  font-weight: 600;
+  color: #202b35;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.users-identity > span {
+  color: #748190;
+  font-size: 13px;
+}
+
+.users-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e9f8f5;
+  color: #0b8f80;
+}
+
+.users-tag.off {
+  background: #fdecec;
+  color: #b42318;
+}
+
+.users-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ---------- controles ---------- */
+
+.users-controls select {
+  font: inherit;
+  font-size: 15px;
+  color: #202b35;
+  background: #f3f6f7;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 10px 14px;
+}
+
+.users-controls select {
+  min-width: 190px;
+}
+
+.users-controls select:disabled {
+  color: #7a8793;
+  cursor: not-allowed;
+}
+
+.users-controls select:focus {
+  outline: none;
+  border-color: #10b7a7;
+  background: #ffffff;
+}
+
+.users-badge {
+  min-width: 92px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #edf2f4;
+  color: #123f4d;
+}
+
+.users-badge.strong {
+  background: #123f4d;
+  color: #ffffff;
+}
+
+.users-primary,
+.users-secondary,
+.users-danger {
+  font: inherit;
+  font-size: 15px;
+  border-radius: 9px;
+  padding: 10px 18px;
+  cursor: pointer;
+}
+
+.users-primary {
+  border: none;
+  background: #123f4d;
+  color: #ffffff;
+}
+
+.users-primary:hover:not(:disabled) {
+  background: #0d2f3a;
+}
+
+.users-secondary {
+  border: 1px solid #d5dde2;
+  background: #ffffff;
+  color: #3c4a57;
+}
+
+.users-secondary:hover:not(:disabled) {
+  background: #f3f6f7;
+}
+
+.users-primary:disabled,
+.users-secondary:disabled,
+.users-danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.users-primary:focus-visible,
+.users-secondary:focus-visible,
+.users-danger:focus-visible,
+.users-link:focus-visible {
+  outline: 2px solid #10b7a7;
+  outline-offset: 2px;
+}
+
+.users-link {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: #123f4d;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.users-danger {
+  border: 1px solid #f1c6c2;
+  background: #ffffff;
+  color: #b42318;
+}
+
+.users-danger:hover:not(:disabled) {
+  background: #fdecec;
+}
+
+/* ---------- solicitudes pendientes ---------- */
+
+.users-requests {
+  border-left: 4px solid #10b7a7;
+}
+
+.users-requests-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.users-requests-head h2 {
+  margin-bottom: 6px;
+}
+
+.users-count {
+  min-width: 26px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #10b7a7;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.users-row.pending {
+  background: #f6fbfa;
+  border-color: #d5efeb;
+}
+
+.users-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border: 1px dashed #d5dde2;
+  border-radius: 12px;
+  color: #7a8793;
+  font-size: 15px;
+}
+
+.users-notice {
+  margin-bottom: 14px;
+}
+
+/* ---------- mensajes ---------- */
+
+.users-msg {
+  font-size: 13px;
+  margin: 0;
+}
+
+.users-msg.success {
+  color: #0b8f80;
+}
+
+.users-msg.error {
+  color: #b42318;
+}
+
+@media (max-width: 750px) {
+  .users-controls select {
+    min-width: 0;
+    flex: 1;
+  }
+}

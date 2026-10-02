@@ -1,0 +1,12 @@
+/* Íconos del menú lateral (lucide-react) */
+
+.nav-item svg,
+.logout-button svg {
+  flex-shrink: 0;
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

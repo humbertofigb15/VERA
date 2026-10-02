@@ -2,6 +2,17 @@ const jwt = require("jsonwebtoken");
 const { authenticator } = require("otplib");
 const QRCode = require("qrcode");
 const users = require("../data/users");
+const userRepository = require("../repositories/userRepository");
+const { logAccessChange } = require("../services/auditLogger");
+const { DEFAULT_ROLE } = require("../config/roles");
+const {
+  USER_STATUS,
+  INSTITUTIONAL_DOMAINS,
+  isInstitutionalEmail,
+  PASSWORD_RULE_MESSAGE,
+  isValidPassword
+} = require("../config/accountRules");
+
 
 const SECRET_KEY = "vera-secret-key";
 
@@ -85,13 +96,26 @@ const login = (req, res) => {
   const lock = getLock(ip);
   if (lock) return lockedResponse(res, lock);
 
-  const user = users.find(
-    (u) => u.username === username && u.password === password
-  );
+  // HU-01: soporta contraseñas cifradas (cuentas nuevas) y en texto plano (cuentas demo)
+  const candidate = userRepository.findByLogin(username);
+  const user = userRepository.checkPassword(candidate, password) ? candidate : null;
+
 
   if (!user) {
     const rec = registerFailure(ip);
     return failureResponse(res, rec, "Usuario o contraseña incorrectos");
+  }
+
+  // HU-01: solo las cuentas activas pueden iniciar sesión
+  if (user.status === USER_STATUS.PENDING) {
+    return res.status(403).json({
+      message: "Tu cuenta está pendiente de aprobación. Te avisaremos cuando un administrador la revise."
+    });
+  }
+  if (user.status !== USER_STATUS.ACTIVE) {
+    return res.status(403).json({
+      message: "Tu cuenta está deshabilitada. Contacta a un administrador."
+    });
   }
 
   // Password OK, but 2FA still pending: do NOT reset the counter yet
@@ -182,5 +206,50 @@ const enable2FA = (req, res) => {
 
   res.json({ message: "2FA activado" });
 };
+// HU-01 (RF-01): registro propio con correo institucional.
+// La cuenta queda pendiente hasta que un Super Admin la apruebe.
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-module.exports = { login, verify2FA, setup2FA, enable2FA };
+const register = async (req, res) => {
+  const name = String(req.body.name || "").trim();
+  const email = String(req.body.email || "").trim().toLowerCase();
+  const password = String(req.body.password || "");
+
+  if (!name) {
+    return res.status(400).json({ message: "El nombre es obligatorio." });
+  }
+  if (!EMAIL_REGEX.test(email)) {
+    return res.status(400).json({ message: "El correo no tiene un formato válido." });
+  }
+  if (!isInstitutionalEmail(email)) {
+    const domains = INSTITUTIONAL_DOMAINS.map((d) => "@" + d).join(", ");
+    return res.status(400).json({
+      message: `Usa tu correo institucional (${domains}).`
+    });
+  }
+  if (!isValidPassword(password)) {
+    return res.status(400).json({ message: PASSWORD_RULE_MESSAGE });
+  }
+  if (userRepository.emailExists(email)) {
+    return res.status(409).json({ message: "Ya existe una cuenta o solicitud con ese correo." });
+  }
+
+  const user = await userRepository.createPending({
+    name,
+    email,
+    password,
+    role: DEFAULT_ROLE
+  });
+
+  logAccessChange({
+    actor: { id: user.id, username: user.username, role: "PUBLIC" },
+    action: "ACCOUNT_REQUESTED",
+    target: user
+  });
+
+  res.status(201).json({
+    message: "Solicitud enviada. Un administrador revisará tu cuenta."
+  });
+};
+
+module.exports = { login, verify2FA, setup2FA, enable2FA, register };
