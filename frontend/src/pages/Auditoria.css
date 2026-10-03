@@ -1,0 +1,61 @@
+/* Registro de actividad. Reutiliza .users-card de Usuarios.css */
+
+.audit-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.audit-filters input,
+.audit-filters select {
+  padding: 10px 12px;
+  border: 1px solid #d9dee3;
+  border-radius: 8px;
+  font-size: 14px;
+  min-width: 220px;
+}
+
+.audit-table-wrap {
+  overflow-x: auto;
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.audit-table th {
+  text-align: left;
+  padding: 10px 12px;
+  color: #707d8a;
+  font-weight: 600;
+  border-bottom: 1px solid #edf0f2;
+}
+
+.audit-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f2f4f6;
+  color: #202b35;
+}
+
+.audit-table .nowrap {
+  white-space: nowrap;
+}
+
+.audit-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #e6f1f4;
+  color: #123f4d;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.audit-tag.warn {
+  background: #fdecea;
+  color: #a12622;
+}

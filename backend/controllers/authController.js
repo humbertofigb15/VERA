@@ -3,7 +3,7 @@ const { authenticator } = require("otplib");
 const QRCode = require("qrcode");
 const users = require("../data/users");
 const userRepository = require("../repositories/userRepository");
-const { logAccessChange } = require("../services/auditLogger");
+const { logAccessChange, logActivity } = require("../services/auditLogger");
 const { DEFAULT_ROLE } = require("../config/roles");
 const {
   USER_STATUS,
@@ -70,7 +70,12 @@ const failureResponse = (res, rec, wrongMessage) => {
   return res.status(401).json({ message: wrongMessage });
 };
 
-const issueSession = (res, user) => {
+const issueSession = (res, user, method = "PASSWORD") => {
+  logActivity({
+    actor: user,
+    action: "LOGIN_SUCCESS",
+    details: { method }
+  });
   const token = jwt.sign(
     { id: user.id, username: user.username, role: user.role },
     SECRET_KEY,
@@ -104,11 +109,23 @@ const login = (req, res) => {
 
 
   if (!user) {
+    logActivity({
+      actor: { username: String(username || "").slice(0, 100) },
+      action: "LOGIN_FAILED",
+      details: { ip }
+    });
     const rec = registerFailure(ip);
     return failureResponse(res, rec, "Usuario o contraseña incorrectos");
   }
 
   // HU-01: solo las cuentas activas pueden iniciar sesión
+  if (user.status !== USER_STATUS.ACTIVE) {
+    logActivity({
+      actor: user,
+      action: "LOGIN_BLOCKED",
+      details: { status: user.status }
+    });
+  }
   if (user.status === USER_STATUS.PENDING) {
     return res.status(403).json({
       message: "Tu cuenta está pendiente de aprobación. Te avisaremos cuando un administrador la revise."
@@ -165,12 +182,13 @@ const verify2FA = (req, res) => {
     });
 
   if (!valid) {
+    if (user) logActivity({ actor: user, action: "TWO_FACTOR_FAILED", details: { ip } });
     const rec = registerFailure(ip);
     return failureResponse(res, rec, "Código incorrecto");
   }
 
   loginAttempts.delete(ip);
-  return issueSession(res, user);
+  return issueSession(res, user, "PASSWORD_2FA");
 };
 
 // ---------- enrollment (requires a normal logged-in session) ----------
@@ -205,6 +223,8 @@ const enable2FA = (req, res) => {
   user.twoFactorSecret = user.pendingSecret;
   user.twoFactorEnabled = true;
   user.pendingSecret = null;
+
+  logActivity({ actor: user, action: "TWO_FACTOR_ENABLED" });
 
   res.json({ message: "2FA activado" });
 };
