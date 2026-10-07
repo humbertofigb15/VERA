@@ -9,6 +9,8 @@ import Dashboard from "./pages/Dashboard";
 import Usuarios from "./pages/Usuarios";
 import Registro from "./pages/Registro";
 import Auditoria from "./pages/Auditoria";
+import Planificacion from "./pages/Planificacion";
+import Trimestres from "./pages/Trimestres";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { USER_ADMIN_ROLES } from "./constants/roles";
 
@@ -48,6 +50,24 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
               <Auditoria />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/planificacion"
+          element={
+            <ProtectedRoute>
+              <Planificacion />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/trimestres"
+          element={
+            <ProtectedRoute>
+              <Trimestres />
             </ProtectedRoute>
           }
         />

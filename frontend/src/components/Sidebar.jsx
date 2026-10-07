@@ -35,8 +35,8 @@ function Sidebar({ active }) {
   // path: a dónde lleva el botón. Las pantallas que aún no existen no llevan path.
   const items = [
     { id: "dashboard", label: "Panel de Portafolio", Icon: LayoutDashboard, path: "/dashboard", show: true },
-    { id: "planificacion", label: "Planificación", Icon: ClipboardList, show: true },
-    { id: "trimestres", label: "Trimestres", Icon: CalendarRange, show: true },
+    { id: "planificacion", label: "Planificación", Icon: ClipboardList, path: "/planificacion", show: true },
+    { id: "trimestres", label: "Trimestres", Icon: CalendarRange, path: "/trimestres", show: true },
     { id: "reportes", label: "Reportes", Icon: FileChartColumn, show: canSeeReports },
     { id: "usuarios", label: "Usuarios", Icon: UserCog, path: "/usuarios", show: canSeeUsers },
     { id: "auditoria", label: "Registro de actividad", Icon: ScrollText, path: "/auditoria", show: canSeeRoles },
