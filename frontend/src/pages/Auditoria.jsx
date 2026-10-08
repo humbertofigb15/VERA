@@ -18,7 +18,11 @@ const ACTION_LABELS = {
   REQUEST_REJECTED: "Solicitud rechazada",
   ROLE_CHANGED: "Cambio de rol",
   USER_ENABLED: "Cuenta habilitada",
-  USER_DISABLED: "Cuenta deshabilitada"
+  USER_DISABLED: "Cuenta deshabilitada",
+  AUDIT_PROPOSAL_CREATED: "Propuesta de auditoría creada",
+  AUDIT_PROPOSAL_UPDATED: "Propuesta de auditoría editada",
+  AUDIT_PROPOSAL_APPROVED: "Propuesta de auditoría aprobada",
+  AUDIT_PROPOSAL_DELETED: "Propuesta de auditoría eliminada"
 };
 
 const WARNING_ACTIONS = [
@@ -26,7 +30,8 @@ const WARNING_ACTIONS = [
   "LOGIN_BLOCKED",
   "TWO_FACTOR_FAILED",
   "USER_DISABLED",
-  "REQUEST_REJECTED"
+  "REQUEST_REJECTED",
+  "AUDIT_PROPOSAL_DELETED"
 ];
 
 const formatDateTime = (iso) =>
@@ -54,6 +59,12 @@ const describe = ({ action, target, details }) => {
     case "LOGIN_FAILED":
     case "TWO_FACTOR_FAILED":
       return details.ip ? `IP ${details.ip}` : "";
+    case "AUDIT_PROPOSAL_CREATED":
+    case "AUDIT_PROPOSAL_UPDATED":
+    case "AUDIT_PROPOSAL_DELETED":
+      return `${details.proposalId} · ${details.title}`;
+    case "AUDIT_PROPOSAL_APPROVED":
+      return `${details.proposalId} · ${details.title} (${details.quarter})`;
     case "LOGIN_SUCCESS":
       return details.method === "PASSWORD_2FA" ? "Contraseña + 2FA" : "Contraseña";
     default:

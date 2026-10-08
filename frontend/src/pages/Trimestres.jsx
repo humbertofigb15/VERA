@@ -1,21 +1,20 @@
 import { ArrowLeft, ArrowRight, CalendarRange, CheckCircle2, Clock, Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { getPlanningAudits } from "../services/planningService";
+import { QUARTERS } from "../constants/planning";
 import "./Planning.css";
-
-const QUARTERS = [
-  { value: "Q1", label: "Trimestre 1", period: "Enero - Abril" },
-  { value: "Q2", label: "Trimestre 2", period: "Mayo - Agosto" },
-  { value: "Q3", label: "Trimestre 3", period: "Septiembre - Diciembre" },
-];
 
 function Trimestres() {
   const navigate = useNavigate();
-  const approvedAudits = getPlanningAudits().filter(
-    (item) => item.status === "APPROVED" && item.approval === 100
-  );
+  const [approvedAudits, setApprovedAudits] = useState([]);
+
+  useEffect(() => {
+    getPlanningAudits()
+      .then((items) => setApprovedAudits(items.filter((item) => item.status === "APPROVED" && item.approval === 100)))
+      .catch(() => setApprovedAudits([]));
+  }, []);
 
   return (
     <div className="dashboard-layout">
@@ -85,7 +84,13 @@ export function TrimestreDetalle() {
   const quarter = QUARTERS.find((item) => item.value === quarterId) || QUARTERS[0];
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("Todos los estados");
-  const audits = getPlanningAudits()
+  const [allAudits, setAllAudits] = useState([]);
+
+  useEffect(() => {
+    getPlanningAudits().then(setAllAudits).catch(() => setAllAudits([]));
+  }, []);
+
+  const audits = allAudits
     .filter((item) => item.status === "APPROVED" && item.approval === 100 && item.quarter === quarter.value)
     .filter((item) => {
       const matchesQuery = `${item.id} ${item.title} ${item.area} ${item.responsible}`
@@ -106,7 +111,7 @@ export function TrimestreDetalle() {
             <div>
               <div className="workspace-kicker"><CalendarRange size={18} /> PLANEACIÓN TRIMESTRAL</div>
               <h1>Espacio de Trabajo {quarter.label.replace("Trimestre ", "T")}</h1>
-              <p>Auditorías aprobadas y programadas durante {quarter.label} 2026.</p>
+              <p>Auditorías aprobadas y programadas durante {quarter.label}.</p>
             </div>
           </div>
 

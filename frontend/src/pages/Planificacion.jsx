@@ -1,63 +1,144 @@
-import { useState } from "react";
-import { Check, ClipboardList, Plus, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, ClipboardList, Pencil, Plus, Trash2, X } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import {
   approveAuditProposal,
   createAuditProposal,
-  getPlanningAudits
+  deleteAuditProposal,
+  getAuditors,
+  getPlanningAudits,
+  updateAuditProposal
 } from "../services/planningService";
+import {
+  AUDIT_TYPES,
+  PLANNING_APPROVE_ROLES,
+  PLANNING_CREATE_ROLES,
+  QUARTERS,
+  RISK_LEVELS
+} from "../constants/planning";
 import "./Planning.css";
-
-const QUARTERS = [
-  { value: "Q1", label: "Trimestre 1 (Enero - Abril)" },
-  { value: "Q2", label: "Trimestre 2 (Mayo - Agosto)" },
-  { value: "Q3", label: "Trimestre 3 (Septiembre - Diciembre)" }
-];
 
 const EMPTY_FORM = {
   title: "",
   area: "",
-  responsible: "",
+  responsibleId: "",
+  type: "Interna",
   risk: "Medio",
   quarter: "",
+  year: new Date().getFullYear(),
+  startDate: "",
+  endDate: "",
   objective: ""
 };
 
+const formatDate = (value) =>
+  value ? new Date(`${value}T00:00:00`).toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric" }) : "";
+
 function Planificacion() {
-  const [items, setItems] = useState(() => getPlanningAudits());
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const canCreate = PLANNING_CREATE_ROLES.includes(user?.role);
+  const canApprove = PLANNING_APPROVE_ROLES.includes(user?.role);
+
+  const [items, setItems] = useState([]);
+  const [auditors, setAuditors] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [quarters, setQuarters] = useState({});
   const [form, setForm] = useState(EMPTY_FORM);
+  const [editingId, setEditingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  const loadItems = async () => {
+    try {
+      setItems(await getPlanningAudits());
+      setError("");
+    } catch (loadError) {
+      setError(loadError.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getPlanningAudits()
+      .then(setItems)
+      .catch((loadError) => setError(loadError.message))
+      .finally(() => setLoading(false));
+    if (canCreate) {
+      getAuditors().then(setAuditors).catch((err) => setError(err.message));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const openProposals = items.filter((item) => item.status !== "APPROVED");
   const approvedProposals = items.filter((item) => item.status === "APPROVED");
 
   const updateForm = (field, value) => setForm({ ...form, [field]: value });
 
-  const handleCreate = (event) => {
-    event.preventDefault();
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(EMPTY_FORM);
+    setIsModalOpen(true);
+  };
+
+  const openEdit = (item) => {
+    setEditingId(item.id);
+    setForm({
+      title: item.title,
+      area: item.area,
+      responsibleId: item.responsibleId ?? "",
+      type: item.type,
+      risk: item.risk,
+      quarter: item.quarter,
+      year: item.year,
+      startDate: item.startDate,
+      endDate: item.endDate,
+      objective: item.objective
+    });
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingId(null);
+  };
+
+  const run = async (action, successMessage) => {
     try {
-      setItems(createAuditProposal(form));
-      setForm(EMPTY_FORM);
-      setIsModalOpen(false);
-      setMessage("La propuesta fue creada y quedó abierta para revisión.");
+      await action();
+      await loadItems();
+      setMessage(successMessage);
       setError("");
-    } catch (creationError) {
-      setError(creationError.message);
+      return true;
+    } catch (actionError) {
+      setError(actionError.message);
+      setMessage("");
+      return false;
     }
   };
 
-  const handleApprove = (id) => {
-    try {
-      setItems(approveAuditProposal(id, quarters[id]));
-      setMessage("La propuesta alcanzó el 100% y ahora aparece en Trimestres.");
-      setError("");
-    } catch (approvalError) {
-      setError(approvalError.message);
-      setMessage("");
-    }
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    const ok = await run(
+      () => (editingId ? updateAuditProposal(editingId, form) : createAuditProposal(form)),
+      editingId ? "La propuesta fue actualizada." : "La propuesta fue creada y quedó abierta para revisión."
+    );
+    setSaving(false);
+    if (ok) closeModal();
+  };
+
+  const handleApprove = (item) =>
+    run(
+      () => approveAuditProposal(item.id, quarters[item.id] || item.quarter),
+      "La propuesta alcanzó el 100% y ahora aparece en Trimestres."
+    );
+
+  const handleDelete = (item) => {
+    if (!window.confirm(`¿Eliminar la propuesta ${item.id}? Esta acción no se puede deshacer.`)) return;
+    run(() => deleteAuditProposal(item.id), "La propuesta fue eliminada.");
   };
 
   return (
@@ -71,10 +152,12 @@ function Planificacion() {
               <h1>Planificación</h1>
               <p>Propón auditorías y da seguimiento a su aprobación.</p>
             </div>
-            <button className="primary-action" type="button" onClick={() => setIsModalOpen(true)}>
-              <Plus size={18} aria-hidden="true" />
-              Nueva propuesta
-            </button>
+            {canCreate && (
+              <button className="primary-action" type="button" onClick={openCreate}>
+                <Plus size={18} aria-hidden="true" />
+                Nueva propuesta
+              </button>
+            )}
           </div>
 
           {message && <p className="planning-message success">{message}</p>}
@@ -94,7 +177,9 @@ function Planificacion() {
             <span>{openProposals.length} pendientes</span>
           </div>
 
-          {openProposals.length === 0 ? (
+          {loading ? (
+            <div className="planning-empty">Cargando propuestas...</div>
+          ) : openProposals.length === 0 ? (
             <div className="planning-empty">
               <Check size={22} aria-hidden="true" />
               No hay propuestas abiertas en este momento.
@@ -110,10 +195,16 @@ function Planificacion() {
                       <span className={`risk-badge risk-${item.risk.toLowerCase()}`}>{item.risk}</span>
                     </div>
                     <h2>{item.title}</h2>
-                    <p>{item.description}</p>
+                    <p>{item.objective}</p>
                     <div className="proposal-meta">
+                      <span><b>Tipo:</b> {item.type}</span>
                       <span><b>Área:</b> {item.area || "Sin definir"}</span>
                       <span><b>Responsable:</b> {item.responsible || "Sin asignar"}</span>
+                      <span><b>Año:</b> {item.year}</span>
+                      {(item.startDate || item.endDate) && (
+                        <span><b>Periodo:</b> {formatDate(item.startDate) || "—"} → {formatDate(item.endDate) || "—"}</span>
+                      )}
+                      {item.createdBy && <span><b>Creada por:</b> {item.createdBy.name}</span>}
                     </div>
                     <div className="approval-progress">
                       <div><span>Aprobación</span><b>{item.approval || 0}%</b></div>
@@ -121,21 +212,37 @@ function Planificacion() {
                     </div>
                   </div>
                   <div className="planning-card-actions">
-                    <label htmlFor={`quarter-${item.id}`}>Trimestre estimado</label>
-                    <select
-                      id={`quarter-${item.id}`}
-                      value={quarters[item.id] || item.quarter || ""}
-                      onChange={(event) => setQuarters({ ...quarters, [item.id]: event.target.value })}
-                    >
-                      <option value="">Sin definir</option>
-                      {QUARTERS.map((quarter) => (
-                        <option key={quarter.value} value={quarter.value}>{quarter.label}</option>
-                      ))}
-                    </select>
-                    <button type="button" onClick={() => handleApprove(item.id)}>
-                      <Check size={17} aria-hidden="true" />
-                      Marcar 100% aprobada
-                    </button>
+                    {canApprove && (
+                      <>
+                        <label htmlFor={`quarter-${item.id}`}>Trimestre estimado</label>
+                        <select
+                          id={`quarter-${item.id}`}
+                          value={quarters[item.id] || item.quarter || ""}
+                          onChange={(event) => setQuarters({ ...quarters, [item.id]: event.target.value })}
+                        >
+                          <option value="">Sin definir</option>
+                          {QUARTERS.map((quarter) => (
+                            <option key={quarter.value} value={quarter.value}>{quarter.label}</option>
+                          ))}
+                        </select>
+                        <button type="button" onClick={() => handleApprove(item)}>
+                          <Check size={17} aria-hidden="true" />
+                          Marcar 100% aprobada
+                        </button>
+                      </>
+                    )}
+                    {canCreate && (
+                      <>
+                        <button type="button" onClick={() => openEdit(item)}>
+                          <Pencil size={16} aria-hidden="true" />
+                          Editar
+                        </button>
+                        <button type="button" onClick={() => handleDelete(item)}>
+                          <Trash2 size={16} aria-hidden="true" />
+                          Eliminar
+                        </button>
+                      </>
+                    )}
                   </div>
                 </article>
               ))}
@@ -144,17 +251,18 @@ function Planificacion() {
 
           {isModalOpen && (
             <div className="modal-backdrop">
-              <form className="proposal-modal" onSubmit={handleCreate}>
+              <form className="proposal-modal" onSubmit={handleSubmit}>
                 <div className="modal-header">
                   <div>
-                    <span className="eyebrow">NUEVA AUDITORÍA</span>
-                    <h2>Abrir una propuesta</h2>
+                    <span className="eyebrow">{editingId ? `EDITAR ${editingId}` : "NUEVA AUDITORÍA"}</span>
+                    <h2>{editingId ? "Editar propuesta" : "Abrir una propuesta"}</h2>
                     <p>Captura el contexto para que el comité pueda revisarla.</p>
                   </div>
-                  <button type="button" className="modal-close" onClick={() => setIsModalOpen(false)} aria-label="Cerrar">
+                  <button type="button" className="modal-close" onClick={closeModal} aria-label="Cerrar">
                     <X size={20} />
                   </button>
                 </div>
+                {error && <p className="planning-message error">{error}</p>}
                 <div className="proposal-form-grid">
                   <label className="full-width">Título de la propuesta
                     <input required value={form.title} onChange={(event) => updateForm("title", event.target.value)} placeholder="Revisión de controles de acceso" />
@@ -163,14 +271,21 @@ function Planificacion() {
                     <input required value={form.area} onChange={(event) => updateForm("area", event.target.value)} placeholder="Operaciones" />
                   </label>
                   <label>Responsable
-                    <input required value={form.responsible} onChange={(event) => updateForm("responsible", event.target.value)} placeholder="Nombre del responsable" />
+                    <select value={form.responsibleId} onChange={(event) => updateForm("responsibleId", event.target.value)}>
+                      <option value="">Sin asignar</option>
+                      {auditors.map((auditor) => (
+                        <option key={auditor.id} value={auditor.id}>{auditor.name}</option>
+                      ))}
+                    </select>
                   </label>
                   <label>Tipo de auditoría
-                    <select defaultValue="Interna"><option>Interna</option><option>Externa</option></select>
+                    <select value={form.type} onChange={(event) => updateForm("type", event.target.value)}>
+                      {AUDIT_TYPES.map((type) => <option key={type}>{type}</option>)}
+                    </select>
                   </label>
                   <label>Nivel de riesgo
                     <select value={form.risk} onChange={(event) => updateForm("risk", event.target.value)}>
-                      <option>Bajo</option><option>Medio</option><option>Alto</option>
+                      {RISK_LEVELS.map((risk) => <option key={risk}>{risk}</option>)}
                     </select>
                   </label>
                   <label>Trimestre estimado
@@ -180,15 +295,23 @@ function Planificacion() {
                     </select>
                   </label>
                   <label>Año
-                    <input value="2026" readOnly />
+                    <input type="number" min="2020" max="2100" required value={form.year} onChange={(event) => updateForm("year", event.target.value)} />
+                  </label>
+                  <label>Fecha de inicio
+                    <input type="date" value={form.startDate} onChange={(event) => updateForm("startDate", event.target.value)} />
+                  </label>
+                  <label>Fecha de fin
+                    <input type="date" min={form.startDate || undefined} value={form.endDate} onChange={(event) => updateForm("endDate", event.target.value)} />
                   </label>
                   <label className="full-width">Objetivo
                     <textarea required value={form.objective} onChange={(event) => updateForm("objective", event.target.value)} placeholder="¿Qué decisión o riesgo busca aclarar esta auditoría?" />
                   </label>
                 </div>
                 <div className="modal-actions">
-                  <button type="button" className="secondary-action" onClick={() => setIsModalOpen(false)}>Cancelar</button>
-                  <button type="submit" className="primary-action">Abrir propuesta</button>
+                  <button type="button" className="secondary-action" onClick={closeModal}>Cancelar</button>
+                  <button type="submit" className="primary-action" disabled={saving}>
+                    {saving ? "Guardando..." : editingId ? "Guardar cambios" : "Abrir propuesta"}
+                  </button>
                 </div>
               </form>
             </div>
