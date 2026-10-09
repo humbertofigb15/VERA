@@ -4,7 +4,7 @@
 
 Este plan convierte los 78 casos de prueba recibidos en un programa verificable. Distingue pruebas unitarias, de integración HTTP, de interfaz, de compatibilidad, de carga y verificaciones operativas. Un caso no se considera aprobado por existir en este catálogo: debe ejecutarse en el nivel indicado y conservar evidencia.
 
-La línea base del repositorio es un prototipo React/Vite y Express. Incluye 18 pruebas automatizadas con `node:test`, entre ellas pruebas unitarias de reglas de cuenta e integración HTTP para riesgos, controles, propuestas, notificaciones, historial, evidencias y panel. Varias pruebas cubren solo APIs. Los datos de dominio residen en memoria; evidencia significa referencias y metadatos, no archivos binarios. Por eso las verificaciones de persistencia, carga de archivos y operación de producción no se pueden declarar cubiertas hoy.
+La línea base del repositorio es un prototipo React/Vite y Express. La suite `node:test` incluye pruebas unitarias e integración HTTP para reglas de cuenta, autenticación, usuarios/roles, riesgos, controles, propuestas, notificaciones, historial, referencias de evidencias y panel. Varias pruebas cubren solo APIs. Los datos de dominio residen en memoria; evidencia significa referencias y metadatos, no archivos binarios. Por eso las verificaciones de persistencia, carga de archivos y operación de producción no se pueden declarar cubiertas hoy.
 
 ## Secuencia propuesta de pull requests
 
@@ -75,9 +75,9 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 | TC-12 | RF-12: creación con datos inválidos | Unit/API | Alta | 3 | Parcial: validación de propuestas existe; validar contrato de auditoría |
 | TC-13 | RF-13: edición de auditoría | API/E2E | Alta | 3 | Parcial: se edita propuesta abierta; falta edición del expediente según estado |
 | TC-14 | RF-13: edición con campos vacíos | Unit/API | Alta | 3 | Parcial |
-| TC-15 | RF-14: transición de estado reflejada en panel | API/UI | Alta | 3 | Parcial: transición de propuesta aprobada a activa/cerrada probada por API |
+| TC-15 | RF-14: transición de estado reflejada en panel | API/UI | Alta | 3 | Parcial: estados previos, inicio/cierre y transiciones inválidas probadas por API; reflejo visual queda en PR-5 |
 | TC-16 | RF-16: riesgo válido reflejado en panel | API/UI | Alta | 3 | Parcial: registro/cálculo de riesgo probado; falta verificar tablero integrado |
-| TC-17 | RF-16: riesgo inválido | Unit/API | Alta | 3 | Existente parcialmente: límites de escala y campos de riesgo |
+| TC-17 | RF-16: riesgo inválido | Unit/API | Alta | 3 | Cubierto por API: límites de escala/campos y vínculo a auditoría inexistente |
 | TC-18 | RF-19: carga exitosa de archivo | API/E2E | Media | 4 | Bloqueado: solo hay referencias/metadatos, no carga binaria |
 | TC-19 | RF-19: archivo excede límite | API/E2E | Media | 4 | Bloqueado: falta carga binaria y límite configurado |
 | TC-20 | RF-24: notificación al responsable | API/E2E | Media | 4 | Parcial: bandeja derivada probada; falta entrega/notificación del evento de negocio descrito |
@@ -90,7 +90,7 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 | TC-27 | RF-29: exportar datos filtrados | API/E2E | Media | 5 | Bloqueado: falta función de exportación |
 | TC-28 | RF-29: exportar filtro vacío | API/UI | Media | 5 | Bloqueado: falta función de exportación |
 | TC-29 | RF-30/RNF-03: funciones distintas por rol | Unit/API/E2E | Alta | 2 | Parcial: listado/edición y denegación por rol cubiertos en API; falta matriz completa de módulos |
-| TC-30 | RF-33: cerrar auditoría y evitar edición posterior | API/UI | Alta | 3 | Parcial: transición de auditoría activa a cerrada probada por API |
+| TC-30 | RF-33: cerrar auditoría y evitar edición posterior | API/UI | Alta | 3 | Parcial: flujo API y rechazo de transiciones/edición posteriores; reflejo visual queda en PR-5 |
 | TC-31 | RNF-01: 150 usuarios concurrentes | Carga | Alta | 7 | Pendiente: no existe prueba de carga |
 | TC-32 | RNF-01: 250 o más usuarios y umbral de respuesta | Carga | Alta | 7 | Pendiente: no existe prueba de carga ni ambiente representativo |
 | TC-33 | RNF-06: navegadores compatibles | E2E | Media | 6 | Pendiente |
@@ -104,8 +104,8 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 | TC-41 | RF-06: total por trimestre seleccionado | Unit/API/E2E | Media | 5 | Parcial: datos de portafolio se prueban; selector y conteo de trimestre requieren cobertura explícita |
 | TC-42 | RF-07: auditorías activas pendientes | API/UI | Alta | 3 | Parcial: endpoint de auditorías activas probado; falta UI y casos de filtrado/orden |
 | TC-43 | RF-08: matriz de riesgo del panel | Unit/API/UI | Alta | 5 | Parcial: se valida estructura de matriz en API; falta casos con distribución de riesgos y render |
-| TC-44 | RF-16: riesgo válido ligado a auditoría | API | Alta | 3 | Parcial: registro de riesgos existe; vínculo descrito requiere confirmar modelo/caso |
-| TC-45 | RF-17: impacto, probabilidad y severidad calculada | Unit/API | Alta | 3 | Existente parcialmente: cálculo y reevaluación tienen cobertura API |
+| TC-44 | RF-16: riesgo válido ligado a auditoría | API | Alta | 3 | Cubierto por API: registro ligado a una auditoría válida y rechazo de vínculo inexistente |
+| TC-45 | RF-17: impacto, probabilidad y severidad calculada | Unit/API | Alta | 3 | Cubierto por API y unitarias para las nueve combinaciones de impacto/probabilidad |
 | TC-46 | RF-18: control asociado al riesgo | API | Alta | 3 | Existente: enlace de controles a riesgos y validación de IDs |
 | TC-47 | RF-20: registrar hallazgo ligado a auditoría | API/E2E | Alta | 3 | Bloqueado: no se encontró módulo/modelo de hallazgos |
 | TC-48 | RF-21: crear plan de acción para hallazgo | API/E2E | Alta | 3 | Bloqueado: depende de hallazgos/planes de acción no implementados |

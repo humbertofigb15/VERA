@@ -28,6 +28,7 @@ test("HU-14: risk registration validates fields, calculates level and retains ev
       description: "La falta de revisión oportuna puede permitir errores materiales.",
       area: "Finanzas",
       ownerId: 5,
+      linkedAuditId: "AUD-01",
       responsePlan: "Revisar controles mensualmente y asignar un responsable alterno.",
       likelihood: 3,
       impact: 2,
@@ -41,12 +42,19 @@ test("HU-14: risk registration validates fields, calculates level and retains ev
     assert.equal(risk.score, 6);
     assert.equal(risk.level, "Alto");
     assert.equal(risk.status, "OPEN");
+    assert.equal(risk.linkedAuditId, "AUD-01");
     assert.equal(risk.evaluations.length, 1);
     assert.equal(risk.evaluations[0].note, body.note);
     assert.ok(risk.evaluations[0].assessedAt);
 
     const duplicate = await fetch(`${baseUrl}/api/risks`, json(manager, "POST", { ...body, title: body.title.toUpperCase() }));
     assert.equal(duplicate.status, 409);
+    const missingAudit = await fetch(`${baseUrl}/api/risks`, json(manager, "POST", {
+      ...body,
+      title: `${body.title} sin auditoría`,
+      linkedAuditId: "AUD-999"
+    }));
+    assert.equal(missingAudit.status, 400);
     const noJustification = await fetch(`${baseUrl}/api/risks/${risk.id}/evaluate`, json(manager, "POST", { likelihood: 1, impact: 1, note: "corta" }));
     assert.equal(noJustification.status, 400);
 

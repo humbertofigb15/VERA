@@ -3,6 +3,7 @@ const userRepository = require("../repositories/userRepository");
 const { logActivity } = require("../services/auditLogger");
 const { ROLES } = require("../config/roles");
 const { USER_STATUS } = require("../config/accountRules");
+const { classifyRisk } = require("../config/riskRules");
 
 const TYPES = ["Interna", "Externa"];
 const RISKS = ["Bajo", "Medio", "Alto"];
@@ -13,8 +14,6 @@ const MAX_YEAR = 2100;
 
 const DUPLICATE_MESSAGE = "Ya existe una propuesta con el mismo título, área y año.";
 const isTerminal = (proposal) => ["APPROVED", "ACTIVE", "CLOSED", "REJECTED"].includes(proposal.status);
-const riskFromScore = (score) => score <= 2 ? "Bajo" : score <= 4 ? "Medio" : "Alto";
-
 const text = (value) => String(value ?? "").trim();
 const isDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value));
 
@@ -77,7 +76,7 @@ const parseProposal = (body) => {
       likelihood,
       impact,
       riskScore: likelihood * impact,
-      risk: riskFromScore(likelihood * impact),
+      risk: classifyRisk(likelihood * impact),
       quarter,
       year,
       startDate,

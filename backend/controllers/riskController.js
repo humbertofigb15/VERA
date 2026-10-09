@@ -3,10 +3,10 @@ const userRepository = require("../repositories/userRepository");
 const planningRepository = require("../repositories/planningRepository");
 const { logActivity } = require("../services/auditLogger");
 const { USER_STATUS } = require("../config/accountRules");
+const { classifyRisk } = require("../config/riskRules");
 
 const FACTORS = [1, 2, 3];
 const text = (value) => String(value ?? "").trim();
-const classify = (score) => score <= 2 ? "Bajo" : score <= 4 ? "Medio" : "Alto";
 const activeUsers = () => userRepository.getAll().filter((user) => user.status === USER_STATUS.ACTIVE);
 
 const parseCore = (body) => {
@@ -51,7 +51,7 @@ const parseAssessment = (body) => {
     return { error: "La justificación debe tener entre 10 y 1,000 caracteres." };
   }
   const score = likelihood * impact;
-  return { data: { likelihood, impact, score, level: classify(score), note } };
+  return { data: { likelihood, impact, score, level: classifyRisk(score), note } };
 };
 
 const listRisks = (req, res) => {
