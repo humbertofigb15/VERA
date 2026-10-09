@@ -1,0 +1,109 @@
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const { createServer } = require("node:http");
+const jwt = require("jsonwebtoken");
+
+process.env.JWT_SECRET ||= "planning-integration-test-secret-32-characters";
+
+const app = require("../server");
+
+const withServer = async (context, callback) => {
+  const server = createServer(app);
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  context.after(() => new Promise((resolve, reject) => {
+    server.close((error) => error ? reject(error) : resolve());
+  }));
+  return callback(`http://127.0.0.1:${server.address().port}`);
+};
+
+const tokenFor = (id) => jwt.sign({ id }, process.env.JWT_SECRET);
+const json = (token, method = "GET", body) => ({
+  method,
+  headers: {
+    Authorization: `Bearer ${token}`,
+    ...(body ? { "Content-Type": "application/json" } : {})
+  },
+  ...(body ? { body: JSON.stringify(body) } : {})
+});
+
+test("HU-22: create, edit, validate duplicate and approve an audit proposal", async (context) => {
+  await withServer(context, async (baseUrl) => {
+    const directorToken = tokenFor(2);
+    const title = `HU-22 integration ${Date.now()}`;
+    const initial = {
+      title,
+      objective: "Verificar el diseño y la operación de controles.",
+      area: "Operaciones",
+      type: "Interna",
+      risk: "Alto",
+      year: 2026
+    };
+
+    const invalid = await fetch(`${baseUrl}/api/planning`, json(directorToken, "POST", {
+      ...initial,
+      objective: ""
+    }));
+    assert.equal(invalid.status, 400);
+
+    const createdResponse = await fetch(`${baseUrl}/api/planning`, json(directorToken, "POST", initial));
+    assert.equal(createdResponse.status, 201);
+    const { proposal } = await createdResponse.json();
+    assert.equal(proposal.title, title);
+    assert.equal(proposal.status, "OPEN");
+    assert.equal(proposal.approval, 0);
+
+    const duplicateResponse = await fetch(`${baseUrl}/api/planning`, json(directorToken, "POST", initial));
+    assert.equal(duplicateResponse.status, 409);
+
+    const updateResponse = await fetch(`${baseUrl}/api/planning/${proposal.id}`, json(directorToken, "PUT", {
+      ...initial,
+      title: `${title} editada`
+    }));
+    assert.equal(updateResponse.status, 200);
+    assert.equal((await updateResponse.json()).proposal.title, `${title} editada`);
+
+    const missingQuarter = await fetch(`${baseUrl}/api/planning/${proposal.id}/approve`, json(directorToken, "POST", {}));
+    assert.equal(missingQuarter.status, 400);
+
+    const approvedResponse = await fetch(`${baseUrl}/api/planning/${proposal.id}/approve`, json(directorToken, "POST", { quarter: "Q3" }));
+    assert.equal(approvedResponse.status, 200);
+    const approved = (await approvedResponse.json()).proposal;
+    assert.equal(approved.status, "APPROVED");
+    assert.equal(approved.approval, 100);
+    assert.equal(approved.quarter, "Q3");
+    assert.ok(approved.approvedAt);
+
+    const immutableResponse = await fetch(`${baseUrl}/api/planning/${proposal.id}`, json(directorToken, "PUT", initial));
+    assert.equal(immutableResponse.status, 409);
+  });
+});
+
+test("HU-22: only authorized roles can create proposals and anonymous users cannot query them", async (context) => {
+  await withServer(context, async (baseUrl) => {
+    const auditorToken = tokenFor(5);
+    const forbidden = await fetch(`${baseUrl}/api/planning`, json(auditorToken, "POST", {
+      title: "No autorizado",
+      objective: "No debe crearse",
+      area: "Tecnología"
+    }));
+    assert.equal(forbidden.status, 403);
+
+    const anonymous = await fetch(`${baseUrl}/api/planning`);
+    assert.equal(anonymous.status, 401);
+
+    const managerToken = tokenFor(3);
+    const created = await fetch(`${baseUrl}/api/planning`, json(managerToken, "POST", {
+      title: `HU-22 approval role ${Date.now()}`,
+      objective: "Verificar separación entre propuesta y aprobación.",
+      area: "Tecnología",
+      year: 2026
+    }));
+    assert.equal(created.status, 201);
+    const proposal = (await created.json()).proposal;
+    const cannotApprove = await fetch(`${baseUrl}/api/planning/${proposal.id}/approve`, json(managerToken, "POST", { quarter: "Q1" }));
+    assert.equal(cannotApprove.status, 403);
+
+    const deleted = await fetch(`${baseUrl}/api/planning/${proposal.id}`, json(tokenFor(2), "DELETE"));
+    assert.equal(deleted.status, 200);
+  });
+});
