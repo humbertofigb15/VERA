@@ -7,6 +7,7 @@ import {
   FileChartColumn,
   UserCog,
   ShieldCheck,
+  ShieldAlert,
   ScrollText,
   LogOut
 } from "lucide-react";
@@ -39,6 +40,7 @@ function Sidebar({ active }) {
     { id: "planificacion", label: "Planificación", Icon: ClipboardList, path: "/planificacion", show: true },
     { id: "trimestres", label: "Trimestres", Icon: CalendarRange, path: "/trimestres", show: true },
     { id: "auditorias-activas", label: "Auditorías activas y riesgos", Icon: Activity, path: "/auditorias-activas", show: true },
+    { id: "riesgos", label: "Registro de riesgos", Icon: ShieldAlert, path: "/riesgos", show: true },
     { id: "reportes", label: "Reportes", Icon: FileChartColumn, show: canSeeReports },
     { id: "usuarios", label: "Usuarios", Icon: UserCog, path: "/usuarios", show: canSeeUsers },
     { id: "auditoria", label: "Registro de actividad", Icon: ScrollText, path: "/auditoria", show: canSeeRoles },

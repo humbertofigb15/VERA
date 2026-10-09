@@ -105,6 +105,14 @@ La planificación captura probabilidad e impacto en una escala de 1 (bajo) a 3 (
 
 `GET /api/dashboard` requiere sesión y devuelve métricas, conteos por estado, matriz activa, pendientes y permisos calculados desde el portafolio. Super Admin y Dirección ven la cola global de decisiones; Gerencia, el seguimiento de propuestas; Auditoría, solo registros asignados por `responsibleId`; Jefatura, una vista general de consulta. La interfaz muestra KPIs, barras de estado, matriz de riesgo 3 × 3 y acciones rápidas filtradas por permisos; los valores se consultan de nuevo al actualizar y no están hardcodeados. Las pruebas de integración verifican autenticación, alcance de auditoría y permisos. No se muestran horas ni hallazgos porque el modelo actual no contiene fuentes de esos datos; así se evita presentar estadísticas inventadas.
 
+### HU-14: registro y evaluación de riesgos
+
+`/riesgos` mantiene un registro independiente de las propuestas de auditoría. Cada riesgo requiere nombre, descripción, área, responsable con cuenta activa y una evaluación inicial justificada; puede vincularse con una propuesta existente y documentar un plan de respuesta. Probabilidad e impacto usan valores enteros de 1 a 3; el puntaje es su producto y conserva los umbrales de HU-09: 1–2 bajo, 3–4 medio y 6–9 alto. El servidor calcula el nivel, detecta duplicados por nombre y área sin distinguir mayúsculas, filtra por nivel y búsqueda, y registra creación, cambios y reevaluaciones en la bitácora.
+
+Cada reevaluación conserva versión, factores, puntaje, nivel, justificación, usuario y fecha; no sobrescribe el historial anterior. `SUPER_ADMIN`, `DIRECTOR` y `GERENTE` pueden registrar, editar y reevaluar. Los auditores pueden consultar solo los riesgos que tienen asignados; otros roles autenticados tienen acceso de lectura global. Endpoints: `GET /api/risks`, `GET /api/risks/owners`, `POST /api/risks`, `PUT /api/risks/:id` y `POST /api/risks/:id/evaluate`; las rutas exigen sesión y las operaciones de escritura aplican autorización por rol.
+
+El alcance actual no incluye cierre del riesgo, adjuntos/evidencia ni almacenamiento persistente: el registro usa el mismo almacenamiento en memoria que el prototipo, por lo que los datos se reinician al reiniciar el backend. Las pruebas de integración cubren autenticación, permisos, validación de escalas y justificación, cálculo de categoría, duplicados, filtros, alcance del auditor y conservación de versiones.
+
 CodeQL analiza JavaScript y TypeScript en los pull requests, en `main` y semanalmente. `npm audit` revisa dependencias de backend y frontend en el flujo de calidad. Dependabot revisa semanalmente dependencias npm y GitHub Actions.
 
 ## Estructura

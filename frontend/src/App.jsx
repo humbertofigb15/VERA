@@ -11,6 +11,7 @@ import Registro from "./pages/Registro";
 import Auditoria from "./pages/Auditoria";
 import Planificacion from "./pages/Planificacion";
 import AuditoriasActivas from "./pages/AuditoriasActivas";
+import Riesgos from "./pages/Riesgos";
 import Trimestres, { TrimestreDetalle } from "./pages/Trimestres";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { USER_ADMIN_ROLES } from "./constants/roles";
@@ -81,6 +82,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/riesgos" element={<ProtectedRoute><Riesgos /></ProtectedRoute>} />
 
         <Route
           path="/trimestres/:quarterId"
