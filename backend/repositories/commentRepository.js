@@ -1,0 +1,22 @@
+const comments = [];
+let nextId = 1;
+
+const clone = (comment) => ({ ...comment, author: { ...comment.author } });
+
+const listByProposal = (proposalId) => comments
+  .filter((comment) => comment.proposalId === proposalId)
+  .map(clone);
+
+const create = ({ proposalId, text, author }) => {
+  const comment = {
+    id: `CMT-${String(nextId++).padStart(4, "0")}`,
+    proposalId,
+    text,
+    author: { ...author },
+    createdAt: new Date().toISOString()
+  };
+  comments.push(comment);
+  return clone(comment);
+};
+
+module.exports = { listByProposal, create };

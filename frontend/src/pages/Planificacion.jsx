@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Check, ClipboardList, Pencil, Plus, Trash2, X, XCircle } from "lucide-react";
 import Sidebar from "../components/Sidebar";
+import PlanningHistoryButton from "../components/PlanningHistoryButton";
 import {
   approveAuditProposal,
   createAuditProposal,
@@ -287,6 +288,7 @@ function Planificacion() {
                         </button>
                       </>
                     )}
+                    <PlanningHistoryButton proposal={item} />
                   </div>
                 </article>
               ))}
@@ -321,6 +323,7 @@ function Planificacion() {
                     </div>
                     <p className="rejection-reason"><b>Motivo:</b> {item.rejectionReason}</p>
                   </div>
+                  <div className="planning-card-actions"><PlanningHistoryButton proposal={item} /></div>
                 </article>
               ))}
             </div>

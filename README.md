@@ -113,6 +113,14 @@ Cada reevaluación conserva versión, factores, puntaje, nivel, justificación, 
 
 El alcance actual no incluye cierre del riesgo, adjuntos/evidencia ni almacenamiento persistente: el registro usa el mismo almacenamiento en memoria que el prototipo, por lo que los datos se reinician al reiniciar el backend. Las pruebas de integración cubren autenticación, permisos, validación de escalas y justificación, cálculo de categoría, duplicados, filtros, alcance del auditor y conservación de versiones.
 
+### HU-18: historial, actividad y comentarios por auditoría
+
+Desde Planificación, Auditorías activas/aprobadas y el detalle trimestral se puede abrir el historial contextual de cada propuesta. La API `GET /api/planning/:id/history` combina eventos existentes de creación, edición, aprobación, rechazo, inicio y cierre con los comentarios del expediente. El identificador del expediente filtra los eventos relacionados; las vistas de Auditoría mantienen el alcance asignado, y las cuentas sin sesión no pueden consultar el recurso.
+
+`POST /api/planning/:id/comments` permite a cualquier usuario autenticado que pueda consultar esa propuesta agregar comentarios de 3 a 2,000 caracteres. El texto se recorta en los extremos, pero se conserva tal como se escribió en el contenido; autor, rol y fecha quedan asociados. Cada comentario produce además el evento `AUDIT_COMMENT_ADDED` en la bitácora general. No se permite editar o borrar comentarios desde esta HU, para mantener su valor como registro de actividad.
+
+Los comentarios y eventos se guardan en memoria conforme a la arquitectura actual y no sobreviven reinicios. Las pruebas de integración comprueban autenticación, asignación de acceso, filtros de eventos por expediente, ciclo de vida completo, validación de comentarios, identidad del autor y la bitácora generada.
+
 CodeQL analiza JavaScript y TypeScript en los pull requests, en `main` y semanalmente. `npm audit` revisa dependencias de backend y frontend en el flujo de calidad. Dependabot revisa semanalmente dependencias npm y GitHub Actions.
 
 ## Estructura

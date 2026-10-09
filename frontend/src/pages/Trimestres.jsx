@@ -2,6 +2,7 @@ import { ArrowLeft, ArrowRight, CalendarRange, CheckCircle2, Clock, Search, Acti
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
+import PlanningHistoryButton from "../components/PlanningHistoryButton";
 import { getPlanningAudits } from "../services/planningService";
 import { QUARTERS } from "../constants/planning";
 import "./Planning.css";
@@ -162,7 +163,7 @@ export function TrimestreDetalle() {
                   {audit.status === "ACTIVE" ? <Activity size={14} /> : <CheckCircle2 size={14} />}{itemStatusLabel(audit.status)}
                 </span>
                 <span className="audit-progress"><i /><b>{audit.progress ?? 0}%</b></span>
-                <button type="button" className="table-action">Abrir</button>
+                <PlanningHistoryButton proposal={audit} compact />
               </div>
             ))}
           </div>
