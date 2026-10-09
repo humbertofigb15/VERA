@@ -1,0 +1,72 @@
+name: Staging load test
+
+on:
+  workflow_dispatch:
+    inputs:
+      staging_url:
+        description: HTTPS origin of the isolated VERA staging environment
+        required: true
+        type: string
+      confirm_load_test:
+        description: Confirm that this isolated staging environment is approved for load testing
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  load:
+    if: inputs.confirm_load_test == true
+    name: k6 dashboard load (150 then 250 VUs)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install k6
+        uses: grafana/setup-k6-action@43b9fc21641a76002687994433dd586f56e791b1 # v1
+        with:
+          k6-version: 2.3.0
+
+      - name: Validate staging inputs
+        shell: bash
+        env:
+          VERA_STAGING_URL: ${{ inputs.staging_url }}
+          VERA_LOAD_TEST_TOKEN: ${{ secrets.VERA_LOAD_TEST_TOKEN }}
+          VERA_LOAD_TEST_ALLOWED_HOST: ${{ vars.VERA_LOAD_TEST_ALLOWED_HOST }}
+        run: |
+          if [[ -z "$VERA_LOAD_TEST_TOKEN" ]]; then
+            echo "Repository secret VERA_LOAD_TEST_TOKEN is required (raw JWT for a dedicated staging test account)." >&2
+            exit 1
+          fi
+          if [[ -z "$VERA_LOAD_TEST_ALLOWED_HOST" ]]; then
+            echo "Repository variable VERA_LOAD_TEST_ALLOWED_HOST must identify the approved staging hostname." >&2
+            exit 1
+          fi
+          if [[ ! "$VERA_STAGING_URL" =~ ^https://[^/?#]+/?$ ]]; then
+            echo "staging_url must be an HTTPS origin without credentials, query, or fragment." >&2
+            exit 1
+          fi
+
+      - name: Run 150 and 250 virtual-user profile
+        env:
+          VERA_STAGING_URL: ${{ inputs.staging_url }}
+          VERA_LOAD_TEST_TOKEN: ${{ secrets.VERA_LOAD_TEST_TOKEN }}
+          VERA_LOAD_TEST_ALLOWED_HOST: ${{ vars.VERA_LOAD_TEST_ALLOWED_HOST }}
+          VERA_TEST_COMMIT: ${{ github.sha }}
+          VERA_TEST_RUN_ID: ${{ github.run_id }}
+        run: k6 run performance/dashboard-load.js
+
+      - name: Upload load results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: vera-load-${{ github.run_id }}-${{ github.run_attempt }}
+          path: quality-report/load-summary.*
+          if-no-files-found: warn
+          retention-days: 30

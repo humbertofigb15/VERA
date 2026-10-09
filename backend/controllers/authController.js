@@ -4,7 +4,9 @@ const QRCode = require("qrcode");
 const users = require("../data/users");
 const userRepository = require("../repositories/userRepository");
 const { logAccessChange, logActivity } = require("../services/auditLogger");
+const { recordLogin } = require("../services/loginLogger");
 const { DEFAULT_ROLE } = require("../config/roles");
+const { getJwtSecret } = require("../config/jwtSecret");
 const {
   USER_STATUS,
   INSTITUTIONAL_DOMAINS,
@@ -15,8 +17,6 @@ const {
   isValidName
 } = require("../config/accountRules");
 
-
-const SECRET_KEY = "vera-secret-key";
 
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME_MS = 5 * 60 * 1000; // 5 minutes
@@ -62,15 +62,27 @@ const registerFailure = (ip) => {
 
 const failureResponse = (res, rec, wrongMessage) => {
   if (rec.lockUntil) {
+    const secondsLeft = Math.ceil((rec.lockUntil - Date.now()) / 1000);
+    res.set("Retry-After", String(secondsLeft));
     return res.status(429).json({
       message: "Demasiados intentos fallidos. Tu acceso está bloqueado por 5 minutos.",
-      retryAfter: LOCK_TIME_MS / 1000
+      retryAfter: secondsLeft
     });
   }
   return res.status(401).json({ message: wrongMessage });
 };
 
-const issueSession = (res, user, method = "PASSWORD") => {
+const issueSession = async (req, res, user, method = "PASSWORD") => {
+  try {
+    await recordLogin({ user, ip: req.ip, method });
+  } catch (error) {
+    console.error("[LOGIN_LOG_ERROR]", error);
+    return res.status(503).json({
+      message: "No se pudo registrar el inicio de sesión. Intenta de nuevo más tarde."
+    });
+  }
+
+
   logActivity({
     actor: user,
     action: "LOGIN_SUCCESS",
@@ -78,7 +90,7 @@ const issueSession = (res, user, method = "PASSWORD") => {
   });
   const token = jwt.sign(
     { id: user.id, username: user.username, role: user.role },
-    SECRET_KEY,
+    getJwtSecret(),
     { expiresIn: "2h" }
   );
 
@@ -96,7 +108,7 @@ const issueSession = (res, user, method = "PASSWORD") => {
 
 // ---------- step 1: username + password ----------
 
-const login = (req, res) => {
+const login = async (req, res) => {
   const { username, password } = req.body;
   const ip = req.ip;
 
@@ -141,19 +153,19 @@ const login = (req, res) => {
   if (user.twoFactorEnabled) {
     const tempToken = jwt.sign(
       { id: user.id, purpose: "2fa" },
-      SECRET_KEY,
+      getJwtSecret(),
       { expiresIn: "5m" }
     );
     return res.json({ requires2FA: true, tempToken });
   }
 
   loginAttempts.delete(ip);
-  return issueSession(res, user);
+  return issueSession(req, res, user);
 };
 
 // ---------- step 2: 6-digit code ----------
 
-const verify2FA = (req, res) => {
+const verify2FA = async (req, res) => {
   const ip = req.ip;
   const { tempToken, code } = req.body;
 
@@ -162,7 +174,7 @@ const verify2FA = (req, res) => {
 
   let payload;
   try {
-    payload = jwt.verify(tempToken, SECRET_KEY);
+    payload = jwt.verify(tempToken, getJwtSecret());
   } catch {
     return res.status(401).json({ message: "Sesión expirada, inicia sesión de nuevo" });
   }
@@ -188,7 +200,7 @@ const verify2FA = (req, res) => {
   }
 
   loginAttempts.delete(ip);
-  return issueSession(res, user, "PASSWORD_2FA");
+  return issueSession(req, res, user, "PASSWORD_2FA");
 };
 
 // ---------- enrollment (requires a normal logged-in session) ----------

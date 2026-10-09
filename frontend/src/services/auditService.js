@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/api/audit";
+const API_URL = "/api/audit";
 
 export const getAuditLog = async ({ action, actor, limit } = {}) => {
   const token = localStorage.getItem("token");

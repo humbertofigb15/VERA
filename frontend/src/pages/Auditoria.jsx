@@ -18,7 +18,22 @@ const ACTION_LABELS = {
   REQUEST_REJECTED: "Solicitud rechazada",
   ROLE_CHANGED: "Cambio de rol",
   USER_ENABLED: "Cuenta habilitada",
-  USER_DISABLED: "Cuenta deshabilitada"
+  USER_DISABLED: "Cuenta deshabilitada",
+  AUDIT_PROPOSAL_CREATED: "Propuesta de auditoría creada",
+  AUDIT_PROPOSAL_UPDATED: "Propuesta de auditoría editada",
+  AUDIT_PROPOSAL_APPROVED: "Propuesta de auditoría aprobada",
+  AUDIT_PROPOSAL_REJECTED: "Propuesta de auditoría rechazada",
+  AUDIT_PROPOSAL_DELETED: "Propuesta de auditoría eliminada",
+  AUDIT_COMMENT_ADDED: "Comentario en auditoría",
+  AUDIT_STARTED: "Auditoría iniciada",
+  AUDIT_CLOSED: "Auditoría cerrada",
+  RISK_REGISTERED: "Riesgo registrado",
+  RISK_UPDATED: "Riesgo actualizado",
+  RISK_EVALUATED: "Riesgo reevaluado",
+  CONTROL_REGISTERED: "Control registrado",
+  CONTROL_UPDATED: "Control actualizado",
+  CONTROL_EVALUATED: "Efectividad de control evaluada",
+  EVIDENCE_REGISTERED: "Referencia de evidencia registrada"
 };
 
 const WARNING_ACTIONS = [
@@ -26,7 +41,12 @@ const WARNING_ACTIONS = [
   "LOGIN_BLOCKED",
   "TWO_FACTOR_FAILED",
   "USER_DISABLED",
-  "REQUEST_REJECTED"
+  "LOGIN_BLOCKED",
+  "TWO_FACTOR_FAILED",
+  "USER_DISABLED",
+  "REQUEST_REJECTED",
+  "AUDIT_PROPOSAL_DELETED",
+  "AUDIT_PROPOSAL_REJECTED"
 ];
 
 const formatDateTime = (iso) =>
@@ -54,6 +74,33 @@ const describe = ({ action, target, details }) => {
     case "LOGIN_FAILED":
     case "TWO_FACTOR_FAILED":
       return details.ip ? `IP ${details.ip}` : "";
+    case "LOGIN_FAILED":
+    case "TWO_FACTOR_FAILED":
+      return details.ip ? `IP ${details.ip}` : "";
+    case "AUDIT_PROPOSAL_CREATED":
+    case "AUDIT_PROPOSAL_UPDATED":
+    case "AUDIT_PROPOSAL_DELETED":
+    case "AUDIT_COMMENT_ADDED":
+      return `${details.proposalId} · ${details.title}`;
+    case "AUDIT_PROPOSAL_APPROVED":
+      return `${details.proposalId} · ${details.title} (${details.quarter})`;
+    case "AUDIT_PROPOSAL_REJECTED":
+      return `${details.proposalId} · ${details.title} · Motivo: ${details.reason}`;
+    case "AUDIT_STARTED":
+    case "AUDIT_CLOSED":
+      return `${details.auditId} · ${details.title}`;
+    case "RISK_REGISTERED":
+    case "RISK_UPDATED":
+    case "RISK_EVALUATED":
+      return `${details.riskId} · ${details.title}${details.level ? ` · ${details.level} (${details.score}/9)` : ""}`;
+    case "CONTROL_REGISTERED":
+    case "CONTROL_UPDATED":
+    case "CONTROL_EVALUATED":
+      return `${details.controlId} · ${details.title}${details.rating ? ` · efectividad ${details.rating}/5` : ""}`;
+    case "EVIDENCE_REGISTERED":
+      return `${details.evidenceId} · ${details.entityType} ${details.entityId} · ${details.title}`;
+    case "LOGIN_SUCCESS":
+      return details.method === "PASSWORD_2FA" ? "Contraseña + 2FA" : "Contraseña";
     case "LOGIN_SUCCESS":
       return details.method === "PASSWORD_2FA" ? "Contraseña + 2FA" : "Contraseña";
     default:

@@ -76,10 +76,11 @@ function Login() {
         <form onSubmit={handleSubmit}>
           {tempToken ? (
             <>
-              <label>Código de verificación</label>
+              <label htmlFor="verification-code">Código de verificación</label>
 
               <input
                 type="text"
+                id="verification-code"
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 maxLength={6}
@@ -91,10 +92,11 @@ function Login() {
             </>
           ) : (
             <>
-               <label>Correo institucional</label>
+<label htmlFor="login-username">Correo institucional</label>
 
               <input
                 type="text"
+                id="login-username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="nombre@vera.local"
@@ -102,10 +104,11 @@ function Login() {
               />
 
 
-              <label>Contraseña</label>
+<label htmlFor="login-password">Contraseña</label>
 
               <input
                 type="password"
+                id="login-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Contraseña"
