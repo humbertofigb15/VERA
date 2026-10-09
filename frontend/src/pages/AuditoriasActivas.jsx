@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Activity, CheckCircle2, Play, RefreshCw } from "lucide-react";
 import Sidebar from "../components/Sidebar";
+import PlanningHistoryButton from "../components/PlanningHistoryButton";
 import { PLANNING_APPROVE_ROLES, RISK_FACTORS } from "../constants/planning";
 import { closeAudit, getActiveAudits, getPlanningAudits, startAudit } from "../services/planningService";
 import "./Planning.css";
@@ -163,11 +164,12 @@ function AuditoriasActivas() {
                       <span><b>Probabilidad / impacto:</b> {factorLabel(audit.likelihood ?? 2)} / {factorLabel(audit.impact ?? 2)}</span>
                     </div>
                   </div>
-                  {canManage && <div className="planning-card-actions">
-                    <button type="button" onClick={() => runTransition(audit.id, closeAudit, "Auditoría cerrada.")} disabled={busyId === audit.id}>
+                  <div className="planning-card-actions">
+                    {canManage && <button type="button" onClick={() => runTransition(audit.id, closeAudit, "Auditoría cerrada.")} disabled={busyId === audit.id}>
                       <CheckCircle2 size={16} aria-hidden="true" />{busyId === audit.id ? "Guardando..." : "Cerrar auditoría"}
-                    </button>
-                  </div>}
+                    </button>}
+                    <PlanningHistoryButton proposal={audit} />
+                  </div>
                 </article>
               ))}
             </div>
@@ -189,11 +191,12 @@ function AuditoriasActivas() {
                     <h2>{audit.title}</h2>
                     <p>{audit.area} · Riesgo {riskFor(audit.likelihood ?? 2, audit.impact ?? 2)}</p>
                   </div>
-                  {canManage && <div className="planning-card-actions">
-                    <button type="button" onClick={() => runTransition(audit.id, startAudit, "Auditoría iniciada y visible en la matriz.")} disabled={busyId === audit.id}>
+                  <div className="planning-card-actions">
+                    {canManage && <button type="button" onClick={() => runTransition(audit.id, startAudit, "Auditoría iniciada y visible en la matriz.")} disabled={busyId === audit.id}>
                       <Play size={16} aria-hidden="true" />{busyId === audit.id ? "Guardando..." : "Iniciar auditoría"}
-                    </button>
-                  </div>}
+                    </button>}
+                    <PlanningHistoryButton proposal={audit} />
+                  </div>
                 </article>
               ))}
             </div>

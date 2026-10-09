@@ -34,14 +34,16 @@ const logAccessChange = ({ actor, action, target, details = {} }) =>
 const logActivity = ({ actor, action, details = {} }) =>
   record({ actor, action, details });
 
-// Más recientes primero. Filtros opcionales: action, actor (texto), from/to (ISO), limit.
-const query = ({ action, actor, from, to, limit = 200 } = {}) => {
+// Más recientes primero. Filtros opcionales: action, actor (texto), from/to (ISO), entityId, limit.
+const query = ({ action, actor, from, to, entityId, limit = 200 } = {}) => {
   const text = actor ? String(actor).trim().toLowerCase() : "";
   const fromTime = from ? Date.parse(from) : NaN;
   const toTime = to ? Date.parse(to) : NaN;
 
   const result = entries.filter((e) => {
+    const details = e.details || {};
     if (action && e.action !== action) return false;
+    if (entityId && details.proposalId !== entityId && details.auditId !== entityId) return false;
     if (text && !(e.actor.username || "").toLowerCase().includes(text)) return false;
     const time = Date.parse(e.date);
     if (!Number.isNaN(fromTime) && time < fromTime) return false;

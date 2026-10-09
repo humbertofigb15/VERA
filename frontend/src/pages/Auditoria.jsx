@@ -24,8 +24,12 @@ const ACTION_LABELS = {
   AUDIT_PROPOSAL_APPROVED: "Propuesta de auditoría aprobada",
   AUDIT_PROPOSAL_REJECTED: "Propuesta de auditoría rechazada",
   AUDIT_PROPOSAL_DELETED: "Propuesta de auditoría eliminada",
+  AUDIT_COMMENT_ADDED: "Comentario en auditoría",
   AUDIT_STARTED: "Auditoría iniciada",
-  AUDIT_CLOSED: "Auditoría cerrada"
+  AUDIT_CLOSED: "Auditoría cerrada",
+  RISK_REGISTERED: "Riesgo registrado",
+  RISK_UPDATED: "Riesgo actualizado",
+  RISK_EVALUATED: "Riesgo reevaluado"
 };
 
 const WARNING_ACTIONS = [
@@ -66,6 +70,7 @@ const describe = ({ action, target, details }) => {
     case "AUDIT_PROPOSAL_CREATED":
     case "AUDIT_PROPOSAL_UPDATED":
     case "AUDIT_PROPOSAL_DELETED":
+    case "AUDIT_COMMENT_ADDED":
       return `${details.proposalId} · ${details.title}`;
     case "AUDIT_PROPOSAL_APPROVED":
       return `${details.proposalId} · ${details.title} (${details.quarter})`;
@@ -74,6 +79,10 @@ const describe = ({ action, target, details }) => {
     case "AUDIT_STARTED":
     case "AUDIT_CLOSED":
       return `${details.auditId} · ${details.title}`;
+    case "RISK_REGISTERED":
+    case "RISK_UPDATED":
+    case "RISK_EVALUATED":
+      return `${details.riskId} · ${details.title}${details.level ? ` · ${details.level} (${details.score}/9)` : ""}`;
     case "LOGIN_SUCCESS":
       return details.method === "PASSWORD_2FA" ? "Contraseña + 2FA" : "Contraseña";
     default:
