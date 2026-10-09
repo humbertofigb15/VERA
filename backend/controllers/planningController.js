@@ -90,12 +90,18 @@ const parseProposal = (body) => {
 
 // GET /api/planning
 const listProposals = (req, res) => {
-  res.json({ proposals: planningRepository.getAll() });
+  const proposals = planningRepository.getAll();
+  const visible = req.user.role === ROLES.AUDITOR
+    ? proposals.filter((proposal) => proposal.responsibleId === req.user.id)
+    : proposals;
+  res.json({ proposals: visible });
 };
 
 // GET /api/planning/active
 const listActiveAudits = (req, res) => {
-  const audits = planningRepository.getAll().filter((item) => item.status === "ACTIVE");
+  const audits = planningRepository.getAll().filter((item) =>
+    item.status === "ACTIVE" && (req.user.role !== ROLES.AUDITOR || item.responsibleId === req.user.id)
+  );
   res.json({ audits });
 };
 
