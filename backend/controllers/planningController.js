@@ -170,6 +170,7 @@ const deleteProposal = (req, res) => {
 };
 
 module.exports = {
+  parseProposal,
   listProposals,
   listAuditors,
   createProposal,

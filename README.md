@@ -13,6 +13,7 @@
 - Inicio de sesión con opción de autenticación de dos factores TOTP.
 - Administración de usuarios y consulta de actividad de auditoría.
 - Creación, edición y aprobación de propuestas de planificación.
+- Reglas y pruebas de integración para el ciclo de propuestas de auditoría (HU-22).
 - Interfaz web para acceso, usuarios, auditoría, planificación y trimestres.
 
 ## Tecnologías
@@ -82,6 +83,12 @@ Desde la raíz del proyecto:
 | `npm run audit` | Auditoría de dependencias de backend y frontend. |
 
 El flujo de GitHub Actions ejecuta las verificaciones de calidad en pull requests dirigidos a `main` y en actualizaciones de `main`. El reporte detallado del workflow se conserva como artefacto de Actions durante 14 días.
+
+### HU-22: creación de propuestas de auditoría
+
+El flujo permite crear propuestas con título, objetivo, área, tipo, nivel de riesgo y año; también admite responsable, trimestre y fechas. El backend valida campos obligatorios, catálogos permitidos, año, fechas, auditor responsable activo y duplicados por título, área y año. Las propuestas empiezan abiertas, se pueden editar mientras sigan abiertas y solo roles `SUPER_ADMIN` o `DIRECTOR` pueden aprobarlas. La aprobación requiere un trimestre válido y fija el avance en 100%; una propuesta aprobada queda protegida contra edición y eliminación.
+
+Las pruebas de integración de `backend/tests/planning.integration.test.js` verifican el flujo HTTP de creación, validación, duplicidad, edición, aprobación y permisos. Se ejecutan con `npm run test:coverage --prefix backend` y forman parte de `npm run quality`.
 
 CodeQL analiza JavaScript y TypeScript en los pull requests, en `main` y semanalmente. `npm audit` revisa dependencias de backend y frontend en el flujo de calidad. Dependabot revisa semanalmente dependencias npm y GitHub Actions.
 
