@@ -15,6 +15,7 @@
 - Creación, edición y aprobación de propuestas de planificación.
 - Reglas y pruebas de integración para el ciclo de propuestas de auditoría (HU-22).
 - Rechazo trazable de propuestas de auditoría con motivo obligatorio (HU-23).
+- Inicio, seguimiento y cierre de auditorías aprobadas con matriz 3 × 3 de riesgos (HU-09).
 - Interfaz web para acceso, usuarios, auditoría, planificación y trimestres.
 
 ## Tecnologías
@@ -93,7 +94,11 @@ Las pruebas de integración de `backend/tests/planning.integration.test.js` veri
 
 ### HU-23: revisión, aprobación o rechazo
 
-Los roles `SUPER_ADMIN` y `DIRECTOR` pueden resolver una propuesta abierta. El rechazo requiere un motivo no vacío, registra quién decidió y cuándo, guarda el motivo en la propuesta y genera el evento `AUDIT_PROPOSAL_REJECTED` con el mismo motivo. La pantalla separa propuestas rechazadas de las abiertas y muestra su motivo y responsable de decisión. Tanto las aprobadas como las rechazadas son estados terminales: no se pueden volver a editar, aprobar, rechazar ni eliminar. Las pruebas de integración comprueban permisos, motivo requerido, registro de decisión y rechazo de cambios posteriores.
+Los roles `SUPER_ADMIN` y `DIRECTOR` pueden resolver una propuesta abierta. El rechazo requiere un motivo no vacío, registra quién decidió y cuándo, guarda el motivo en la propuesta y genera el evento `AUDIT_PROPOSAL_REJECTED` con el mismo motivo. La pantalla separa propuestas rechazadas de las abiertas y muestra su motivo y responsable de decisión. Las propuestas rechazadas no se pueden editar, aprobar, volver a rechazar ni eliminar. Las propuestas aprobadas tampoco se pueden editar ni eliminar; su única transición posterior es iniciar la auditoría. Las pruebas de integración comprueban permisos, motivo requerido, registro de decisión y rechazo de cambios posteriores.
+
+### HU-09: auditorías activas y matriz de riesgos
+
+La planificación captura probabilidad e impacto en una escala de 1 (bajo) a 3 (alto); la API calcula el puntaje como su producto y clasifica 1–2 como bajo, 3–4 como medio y 6–9 como alto. La matriz 3 × 3 cuenta las auditorías que están en curso por ambas dimensiones. Una auditoría solo puede iniciarse después de ser aprobada y asignada a un trimestre. `SUPER_ADMIN` o `DIRECTOR` pueden iniciar o cerrar; el inicio registra actor y fecha con avance de ejecución en 0%, y el cierre registra actor y fecha con avance en 100%. El endpoint `GET /api/planning/active` alimenta el tablero; los eventos `AUDIT_STARTED` y `AUDIT_CLOSED` aparecen en el registro de actividad. Los estados aprobada, en curso, cerrada y rechazada no permiten edición; una auditoría cerrada sale de la matriz activa y permanece en el calendario trimestral con su avance real.
 
 CodeQL analiza JavaScript y TypeScript en los pull requests, en `main` y semanalmente. `npm audit` revisa dependencias de backend y frontend en el flujo de calidad. Dependabot revisa semanalmente dependencias npm y GitHub Actions.
 

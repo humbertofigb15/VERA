@@ -25,6 +25,11 @@ export const getPlanningAudits = async () => {
   return data.proposals;
 };
 
+export const getActiveAudits = async () => {
+  const data = await request("/active");
+  return data.audits;
+};
+
 export const getAuditors = async () => {
   const data = await request("/auditors");
   return data.auditors;
@@ -54,6 +59,16 @@ export const rejectAuditProposal = async (id, reason) => {
     body: JSON.stringify({ reason })
   });
   return data.proposal;
+};
+
+export const startAudit = async (id) => {
+  const data = await request(`/${id}/start`, { method: "POST", body: JSON.stringify({}) });
+  return data.audit;
+};
+
+export const closeAudit = async (id) => {
+  const data = await request(`/${id}/close`, { method: "POST", body: JSON.stringify({}) });
+  return data.audit;
 };
 
 export const deleteAuditProposal = async (id) => {

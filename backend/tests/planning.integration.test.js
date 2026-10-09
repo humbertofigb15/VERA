@@ -147,3 +147,54 @@ test("HU-23: rejection requires a reason, records the decision and makes the pro
     assert.equal(remove.status, 409);
   });
 });
+
+test("HU-09: risk is derived from probability and impact; approved audits follow start and close transitions", async (context) => {
+  await withServer(context, async (baseUrl) => {
+    const directorToken = tokenFor(2);
+    const managerToken = tokenFor(3);
+    const body = {
+      title: `HU-09 lifecycle ${Date.now()}`,
+      objective: "Revisar exposición y ejecutar el programa aprobado.",
+      area: "Operaciones",
+      year: 2026,
+      likelihood: 3,
+      impact: 2
+    };
+    const invalidRisk = await fetch(`${baseUrl}/api/planning`, json(directorToken, "POST", { ...body, likelihood: 4 }));
+    assert.equal(invalidRisk.status, 400);
+
+    const createdResponse = await fetch(`${baseUrl}/api/planning`, json(directorToken, "POST", body));
+    assert.equal(createdResponse.status, 201);
+    const created = (await createdResponse.json()).proposal;
+    assert.equal(created.riskScore, 6);
+    assert.equal(created.risk, "Alto");
+
+    const approval = await fetch(`${baseUrl}/api/planning/${created.id}/approve`, json(directorToken, "POST", { quarter: "Q2" }));
+    assert.equal(approval.status, 200);
+
+    const unauthorizedStart = await fetch(`${baseUrl}/api/planning/${created.id}/start`, json(managerToken, "POST", {}));
+    assert.equal(unauthorizedStart.status, 403);
+    const startResponse = await fetch(`${baseUrl}/api/planning/${created.id}/start`, json(directorToken, "POST", {}));
+    assert.equal(startResponse.status, 200);
+    const active = (await startResponse.json()).audit;
+    assert.equal(active.status, "ACTIVE");
+    assert.equal(active.progress, 0);
+    assert.ok(active.startedAt);
+
+    const activeList = await fetch(`${baseUrl}/api/planning/active`, json(directorToken));
+    assert.ok((await activeList.json()).audits.some((audit) => audit.id === created.id));
+    const repeatedStart = await fetch(`${baseUrl}/api/planning/${created.id}/start`, json(directorToken, "POST", {}));
+    assert.equal(repeatedStart.status, 409);
+
+    const closeResponse = await fetch(`${baseUrl}/api/planning/${created.id}/close`, json(directorToken, "POST", {}));
+    assert.equal(closeResponse.status, 200);
+    const closed = (await closeResponse.json()).audit;
+    assert.equal(closed.status, "CLOSED");
+    assert.equal(closed.progress, 100);
+    assert.ok(closed.closedAt);
+    const noLongerActive = await fetch(`${baseUrl}/api/planning/active`, json(directorToken));
+    assert.ok(!(await noLongerActive.json()).audits.some((audit) => audit.id === created.id));
+    const repeatedClose = await fetch(`${baseUrl}/api/planning/${created.id}/close`, json(directorToken, "POST", {}));
+    assert.equal(repeatedClose.status, 409);
+  });
+});

@@ -7,6 +7,11 @@ export const QUARTERS = [
 
 export const AUDIT_TYPES = ["Interna", "Externa"];
 export const RISK_LEVELS = ["Bajo", "Medio", "Alto"];
+export const RISK_FACTORS = [
+  { value: 1, label: "Baja" },
+  { value: 2, label: "Media" },
+  { value: 3, label: "Alta" }
+];
 
 // Debe coincidir con PLANNING_CREATE_ROLES / PLANNING_APPROVE_ROLES del backend.
 export const PLANNING_CREATE_ROLES = ["SUPER_ADMIN", "DIRECTOR", "GERENTE"];

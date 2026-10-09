@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   ClipboardList,
   CalendarRange,
+  Activity,
   FileChartColumn,
   UserCog,
   ShieldCheck,
@@ -17,7 +18,7 @@ const ICON_SIZE = 20;
 const ICON_STROKE = 1.75;
 
 // Menú lateral compartido por todas las pantallas.
-// active: "dashboard" | "planificacion" | "trimestres" | "reportes" | "usuarios" | "roles" | "auditoria"
+// active: "dashboard" | "planificacion" | "trimestres" | "auditorias-activas" | "reportes" | "usuarios" | "roles" | "auditoria"
 function Sidebar({ active }) {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "null");
@@ -37,6 +38,7 @@ function Sidebar({ active }) {
     { id: "dashboard", label: "Panel de Portafolio", Icon: LayoutDashboard, path: "/dashboard", show: true },
     { id: "planificacion", label: "Planificación", Icon: ClipboardList, path: "/planificacion", show: true },
     { id: "trimestres", label: "Trimestres", Icon: CalendarRange, path: "/trimestres", show: true },
+    { id: "auditorias-activas", label: "Auditorías activas y riesgos", Icon: Activity, path: "/auditorias-activas", show: true },
     { id: "reportes", label: "Reportes", Icon: FileChartColumn, show: canSeeReports },
     { id: "usuarios", label: "Usuarios", Icon: UserCog, path: "/usuarios", show: canSeeUsers },
     { id: "auditoria", label: "Registro de actividad", Icon: ScrollText, path: "/auditoria", show: canSeeRoles },

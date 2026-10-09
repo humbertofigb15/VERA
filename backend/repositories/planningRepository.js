@@ -1,28 +1,39 @@
 // Propuestas de auditoría en memoria (igual que el resto de los datos del demo).
-const seed = (id, title, objective, area, risk) => ({
-  id,
-  title,
-  objective,
-  type: "Interna",
-  area,
-  responsibleId: null,
-  responsible: "Sin asignar",
-  risk,
-  year: 2026,
-  quarter: "",
-  startDate: "",
-  endDate: "",
-  status: "OPEN",
-  approval: 0,
-  createdBy: null,
-  createdAt: new Date().toISOString(),
-  updatedAt: null,
-  approvedBy: null,
-  approvedAt: null,
-  rejectedBy: null,
-  rejectedAt: null,
-  rejectionReason: null
-});
+const seed = (id, title, objective, area, risk) => {
+  const factor = risk === "Alto" ? 3 : risk === "Bajo" ? 1 : 2;
+  return {
+    id,
+    title,
+    objective,
+    type: "Interna",
+    area,
+    responsibleId: null,
+    responsible: "Sin asignar",
+    likelihood: factor,
+    impact: factor,
+    riskScore: factor * factor,
+    risk,
+    year: 2026,
+    quarter: "",
+    startDate: "",
+    endDate: "",
+    status: "OPEN",
+    approval: 0,
+    progress: 0,
+    createdBy: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: null,
+    approvedBy: null,
+    approvedAt: null,
+    startedBy: null,
+    startedAt: null,
+    closedBy: null,
+    closedAt: null,
+    rejectedBy: null,
+    rejectedAt: null,
+    rejectionReason: null
+  };
+};
 
 const proposals = [
   seed("AUD-01", "Auditoría de controles de acceso", "Revisión de usuarios, roles y permisos del portafolio.", "Tecnología", "Medio"),
@@ -60,10 +71,15 @@ const create = (data) => {
     id: nextId(),
     status: "OPEN",
     approval: 0,
+    progress: 0,
     createdAt: new Date().toISOString(),
     updatedAt: null,
     approvedBy: null,
     approvedAt: null,
+    startedBy: null,
+    startedAt: null,
+    closedBy: null,
+    closedAt: null,
     rejectedBy: null,
     rejectedAt: null,
     rejectionReason: null
@@ -92,6 +108,30 @@ const approve = (id, { quarter, approvedBy }) => {
   return { ...proposal };
 };
 
+const start = (id, { startedBy }) => {
+  const proposal = findById(id);
+  if (!proposal) return null;
+  Object.assign(proposal, {
+    status: "ACTIVE",
+    progress: 0,
+    startedBy,
+    startedAt: new Date().toISOString()
+  });
+  return { ...proposal };
+};
+
+const close = (id, { closedBy }) => {
+  const proposal = findById(id);
+  if (!proposal) return null;
+  Object.assign(proposal, {
+    status: "CLOSED",
+    progress: 100,
+    closedBy,
+    closedAt: new Date().toISOString()
+  });
+  return { ...proposal };
+};
+
 const reject = (id, { rejectionReason, rejectedBy }) => {
   const proposal = findById(id);
   if (!proposal) return null;
@@ -111,4 +151,4 @@ const remove = (id) => {
   return removed;
 };
 
-module.exports = { getAll, findById, findDuplicate, create, update, approve, reject, remove };
+module.exports = { getAll, findById, findDuplicate, create, update, approve, start, close, reject, remove };

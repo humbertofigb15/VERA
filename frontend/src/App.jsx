@@ -10,6 +10,7 @@ import Usuarios from "./pages/Usuarios";
 import Registro from "./pages/Registro";
 import Auditoria from "./pages/Auditoria";
 import Planificacion from "./pages/Planificacion";
+import AuditoriasActivas from "./pages/AuditoriasActivas";
 import Trimestres, { TrimestreDetalle } from "./pages/Trimestres";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { USER_ADMIN_ROLES } from "./constants/roles";
@@ -68,6 +69,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Trimestres />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/auditorias-activas"
+          element={
+            <ProtectedRoute>
+              <AuditoriasActivas />
             </ProtectedRoute>
           }
         />
