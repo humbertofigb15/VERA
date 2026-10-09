@@ -81,6 +81,18 @@ test("HU-16: evidence references can be linked to risks, controls and audits wit
     evidenceType: "DOCUMENT", reference: "Drive/ref-123", entityType: "RISK", entityId: "RSK-999"
   }));
   assert.equal(missingEntity.status, 404);
+
+  const unsupportedType = await fetch(`${baseUrl}/api/evidence`, json(manager, "POST", {
+    title: "Tipo no soportado", description: "El tipo no pertenece al catálogo disponible.",
+    evidenceType: "VIDEO", reference: "Drive/ref-456", entityType: "RISK", entityId: assignedRisk.id
+  }));
+  assert.equal(unsupportedType.status, 400);
+
+  const search = await fetch(`${baseUrl}/api/evidence?search=${encodeURIComponent("Evidencia de control")}`, json(manager));
+  assert.equal((await search.json()).evidence.length, 1);
+  const noSearchResults = await fetch(`${baseUrl}/api/evidence?search=${encodeURIComponent("no existe en el expediente")}`, json(manager));
+  assert.equal((await noSearchResults.json()).evidence.length, 0);
+
   const filtered = await fetch(`${baseUrl}/api/evidence?entityType=RISK&entityId=${assignedRisk.id}`, json(manager));
   assert.equal((await filtered.json()).evidence.length, 1);
   const anonymous = await fetch(`${baseUrl}/api/evidence`);
