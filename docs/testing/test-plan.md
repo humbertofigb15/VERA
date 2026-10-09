@@ -80,7 +80,7 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 | TC-17 | RF-16: riesgo inválido | Unit/API | Alta | 3 | Cubierto por API: límites de escala/campos y vínculo a auditoría inexistente |
 | TC-18 | RF-19: carga exitosa de archivo | API/E2E | Media | 4 | Bloqueado: solo hay referencias/metadatos, no carga binaria |
 | TC-19 | RF-19: archivo excede límite | API/E2E | Media | 4 | Bloqueado: falta carga binaria y límite configurado |
-| TC-20 | RF-24: notificación al responsable | API/E2E | Media | 4 | Parcial: bandeja derivada probada; falta entrega/notificación del evento de negocio descrito |
+| TC-20 | RF-24: notificación al responsable | API/E2E | Media | 4 | Parcial: bandeja derivada, prioridad y alcance por rol probados; falta canal externo/evento de entrega |
 | TC-21 | RF-24: marcar/gestionar como leída | API/E2E | Media | 4 | Bloqueado: la bandeja no persiste estados de lectura |
 | TC-22 | RF-27: aplicar filtros | API/E2E | Media | 5 | Parcial: existen filtros de riesgos/evidencias, no de reportes |
 | TC-23 | RF-27: búsqueda con coincidencias | API/E2E | Media | 5 | Parcial: búsqueda de riesgos/evidencias; falta búsqueda global/reportes |
@@ -111,15 +111,15 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 | TC-48 | RF-21: crear plan de acción para hallazgo | API/E2E | Alta | 3 | Bloqueado: depende de hallazgos/planes de acción no implementados |
 | TC-49 | RF-22: asignar responsable y fecha de compromiso | API/E2E | Alta | 3 | Bloqueado: depende de planes de acción no implementados |
 | TC-50 | RF-23: cerrar hallazgo tras completar plan | API/E2E | Alta | 3 | Bloqueado: depende de hallazgos/planes de acción no implementados |
-| TC-51 | RF-25: historial de cambios de auditoría | API/UI | Media | 4 | Parcial: historial de propuestas y eventos probados; falta alcance de expediente de auditoría |
-| TC-52 | RF-26: comentario dentro de auditoría | API/E2E | Media | 4 | Parcial: comentarios de propuesta probados; falta confirmar comentario de auditoría |
+| TC-51 | RF-25: historial de cambios de auditoría | API/UI | Media | 4 | Parcial: historial contextual de propuestas y filtro de bitácora probados; falta historial de expediente persistente/UI |
+| TC-52 | RF-26: comentario dentro de auditoría | API/E2E | Media | 4 | Parcial: permisos, alcance y validación de comentarios del expediente de planificación probados; falta persistencia/UI |
 | TC-53 | RF-28: reporte combinado de auditorías/riesgos/hallazgos | API/E2E | Media | 5 | Bloqueado: no se encontró función de reportes ni hallazgos |
 | TC-54 | RF-31: crear propuesta con objetivo, alcance, justificación y periodo | API/E2E | Alta | 3 | Parcial: creación/validaciones de propuesta probadas; cotejar cada campo requerido |
 | TC-55 | RF-32: aprobar propuesta | API/E2E | Alta | 3 | Existente: aprobación, permisos y transición probados por API |
 | TC-56 | RF-32: rechazar propuesta con motivo | API/E2E | Alta | 3 | Existente: motivo obligatorio, actor/fecha y estado terminal probados por API |
 | TC-57 | RNF-02: TLS 1.2 o superior en tránsito | Operativa | Alta | 7 | Bloqueado: requiere URL/ambiente desplegado y configuración TLS verificable |
 | TC-58 | RNF-03: acceso directo a módulo sin permiso | API/E2E | Alta | 2 | Parcial: endpoints con roles cubiertos; falta matriz completa de rutas y pruebas UI/direct URL |
-| TC-59 | RNF-04: registrar login y cambio con usuario/fecha/hora | API/operativa | Alta | 4 | Parcial: eventos se emiten en operaciones cubiertas; falta prueba contractual de login/cambio y persistencia |
+| TC-59 | RNF-04: registrar login y cambio con usuario/fecha/hora | API/operativa | Alta | 4 | Parcial: login instrumentado y bitácora consultable/restringida; almacenamiento y comprobación real de Supabase requieren ambiente |
 | TC-60 | RNF-05: crear auditoría en menos de 10 minutos sin capacitación | Usabilidad/manual | Media | 6 | Pendiente: requiere protocolo y participantes de prueba |
 | TC-61 | RNF-08: disponibilidad mensual de 99.5% | Operativa/monitoreo | Media | 7 | Bloqueado: requiere monitoreo continuo durante un mes |
 | TC-62 | RNF-09: recuperar servicio desde respaldo en máximo 4 horas | Operativa/manual | Alta | 7 | Bloqueado: requiere respaldo, runbook y simulacro aislado |

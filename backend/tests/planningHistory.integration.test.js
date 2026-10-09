@@ -46,6 +46,8 @@ test("HU-18: contextual history shows proposal lifecycle events and comments wit
   const notAssignedProposal = (await notAssignedProposalResponse.json()).proposal;
   const hiddenHistory = await fetch(`${baseUrl}/api/planning/${notAssignedProposal.id}/history`, json(auditor));
   assert.equal(hiddenHistory.status, 404);
+  const hiddenComment = await fetch(`${baseUrl}/api/planning/${notAssignedProposal.id}/comments`, json(auditor, "POST", { text: "Comentario fuera de alcance." }));
+  assert.equal(hiddenComment.status, 404);
 
   const approval = await fetch(`${baseUrl}/api/planning/${proposal.id}/approve`, json(director, "POST", { quarter: "Q2" }));
   assert.equal(approval.status, 200);
@@ -56,6 +58,8 @@ test("HU-18: contextual history shows proposal lifecycle events and comments wit
 
   const invalidComment = await fetch(`${baseUrl}/api/planning/${proposal.id}/comments`, json(auditor, "POST", { text: "  " }));
   assert.equal(invalidComment.status, 400);
+  const oversizedComment = await fetch(`${baseUrl}/api/planning/${proposal.id}/comments`, json(auditor, "POST", { text: "x".repeat(2001) }));
+  assert.equal(oversizedComment.status, 400);
   const commentText = "La evidencia solicitada está disponible en el expediente del área.";
   const commentResponse = await fetch(`${baseUrl}/api/planning/${proposal.id}/comments`, json(auditor, "POST", { text: ` ${commentText} ` }));
   assert.equal(commentResponse.status, 201);
