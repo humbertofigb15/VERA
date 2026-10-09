@@ -17,7 +17,7 @@ Los PRs se preparan y se integran en este orden, uno a la vez, con base actualiz
 | 3 | Ciclo de auditoría, propuestas, riesgos, evaluaciones, controles, hallazgos y planes de acción. | Pruebas unitarias de reglas/transiciones y pruebas de integración de API. |
 | 4 | Evidencias, notificaciones, historial, comentarios y trazabilidad. | Pruebas HTTP de alcance, validación y eventos; prueba de carga binaria solo si se implementa esa capacidad. |
 | 5 | Panel, actividad reciente, filtros, búsquedas, reportes y exportaciones. | Pruebas de servicio/API y de interfaz para filtros, resultados vacíos y permisos. |
-| 6 | Flujos web, navegadores, tamaños de pantalla, accesibilidad y usabilidad. | E2E automatizadas en Chrome, Edge y Firefox; emulación de móvil/tablet y revisión manual de hardware real. |
+| 6 | Flujos web, navegadores, tamaños de pantalla, accesibilidad y usabilidad. | Playwright E2E automatizadas en Chromium, Chrome, Edge y Firefox; emulación de móvil/tablet, axe en login/panel y revisión manual de hardware real. |
 | 7 | Concurrencia, rendimiento y controles operativos/de plataforma. | Carga repetible en staging y evidencia manual/monitoreada para TLS, disponibilidad, respaldo, restauración, escalamiento, privacidad y cumplimiento. |
 
 Cada PR debe incluir solo pruebas de comportamiento que correspondan a funciones existentes. Si el requisito depende de una función ausente, el caso queda como bloqueado/pending con el prerrequisito explícito; no se agrega una prueba que simule un resultado aún no ofrecido por VERA.
@@ -93,17 +93,17 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 | TC-30 | RF-33: cerrar auditoría y evitar edición posterior | API/UI | Alta | 3 | Parcial: flujo API y rechazo de transiciones/edición posteriores; reflejo visual queda en PR-5 |
 | TC-31 | RNF-01: 150 usuarios concurrentes | Carga | Alta | 7 | Pendiente: no existe prueba de carga |
 | TC-32 | RNF-01: 250 o más usuarios y umbral de respuesta | Carga | Alta | 7 | Pendiente: no existe prueba de carga ni ambiente representativo |
-| TC-33 | RNF-06: navegadores compatibles | E2E | Media | 6 | Pendiente |
+| TC-33 | RNF-06: navegadores compatibles | E2E | Media | 6 | Parcial: Playwright cubre Chromium y Firefox; CI añade Chrome y Edge. La ejecución local de Firefox se limita por el runner Windows; validar el check Linux del PR antes de declarar la matriz completa |
 | TC-34 | RNF-06: navegador no compatible | E2E/manual | Media | 6 | Pendiente; acordar comportamiento soportado y mensaje esperado |
-| TC-35 | RNF-07: escritorio, tablet, orientación | UI/manual | Media | 6 | Pendiente |
+| TC-35 | RNF-07: escritorio, tablet, orientación | UI/E2E/manual | Media | 6 | Parcial: flujo del panel verificado en Chromium escritorio y viewport tablet; orientación y hardware físico quedan manuales |
 | TC-36 | RNF-17: contraseña segura aceptada | Unit/API | Alta | 2 | Cubierto por unitarias de reglas y API de registro |
-| TC-37 | RNF-07: diseño responsivo en dispositivos | UI/manual | Media | 6 | Pendiente |
+| TC-37 | RNF-07: diseño responsivo en dispositivos | UI/E2E/manual | Media | 6 | Parcial: login y panel sin overflow horizontal a 390 px y 768 px; prueba también emulación Pixel 7. Falta verificar dispositivos físicos y resto de pantallas |
 | TC-38 | RNF-17: política mínima de longitud, mayúsculas, minúsculas y números | Unit/API | Alta | 2 | Cubierto por unitarias: frontera de ocho caracteres y cada categoría requerida |
 | TC-39 | RF-02: administrador edita rol y deshabilita usuario | API/E2E | Alta | 2 | Cubierto por API: cambio de rol/estado, actor sin permiso y sesión anterior invalidada/reactivada |
-| TC-40 | RF-05: panel con gráficas, métricas y acciones | API/E2E | Media | 5 | Parcial: métricas, roles y matriz cubiertos por unitarias/API; render/UI se agrega en PR-6 |
+| TC-40 | RF-05: panel con gráficas, métricas y acciones | API/E2E | Media | 5 | Parcial: métricas, roles y matriz cubiertos por unitarias/API; PR-6 verifica visualización y acciones director/auditor con respuestas API ficticias |
 | TC-41 | RF-06: total por trimestre seleccionado | Unit/API/E2E | Media | 5 | Bloqueado parcialmente: la UI no ofrece selector de periodo ni conteo anual/semestral/trimestral hoy |
 | TC-42 | RF-07: auditorías activas pendientes | API/UI | Alta | 3 | Parcial: endpoint y alcance por rol probados; falta UI y casos de filtrado/orden |
-| TC-43 | RF-08: matriz de riesgo del panel | Unit/API/UI | Alta | 5 | Parcial: nueve celdas, conteos activos y permisos cubiertos por unitarias/API; falta render UI |
+| TC-43 | RF-08: matriz de riesgo del panel | Unit/API/UI | Alta | 5 | Parcial: nueve celdas, conteos activos y permisos cubiertos por unitarias/API; render y presencia de nueve celdas verificados en Chromium |
 | TC-44 | RF-16: riesgo válido ligado a auditoría | API | Alta | 3 | Cubierto por API: registro ligado a una auditoría válida y rechazo de vínculo inexistente |
 | TC-45 | RF-17: impacto, probabilidad y severidad calculada | Unit/API | Alta | 3 | Cubierto por API y unitarias para las nueve combinaciones de impacto/probabilidad |
 | TC-46 | RF-18: control asociado al riesgo | API | Alta | 3 | Existente: enlace de controles a riesgos y validación de IDs |
@@ -130,9 +130,9 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 | TC-67 | RNF-14: panel carga en máximo 2 segundos | Rendimiento/E2E | Media | 7 | Pendiente: no hay medición base; definir navegador, red y estadístico |
 | TC-68 | RNF-15: reporte de hasta 100 páginas en máximo 10 segundos | Rendimiento | Media | 7 | Bloqueado: reportes no implementados |
 | TC-69 | RNF-16: activar y usar 2FA | API/E2E | Alta | 2 | Cubierto por API: enrolamiento TOTP, código erróneo/expirado y sesión solo tras código válido |
-| TC-70 | RNF-18: WCAG 2.1 AA | A11y/UI/manual | Media | 6 | Pendiente: combinar axe/Lighthouse con teclado y revisión manual |
+| TC-70 | RNF-18: WCAG 2.1 AA | A11y/UI/manual | Media | 6 | Parcial: axe analiza login y panel contra reglas WCAG 2.1 A/AA; falta teclado/lector, resto de rutas y revisión manual antes de afirmar conformidad |
 | TC-71 | RNF-19: interfaz completamente en español | UI/manual | Media | 6 | Pendiente: inventario y verificación de textos visibles |
-| TC-72 | RNF-20: mensajes claros sin trazas técnicas | API/E2E | Media | 6 | Parcial: APIs validan errores; falta revisar mensajes visibles y ausencia de detalles internos |
+| TC-72 | RNF-20: mensajes claros sin trazas técnicas | API/E2E | Media | 6 | Parcial: API y E2E validan error visible de login sin stack/exception; revisar demás formularios y flujos |
 | TC-73 | RNF-21: aviso de mantenimiento con 48 horas | Operativa/E2E | Media | 7 | Bloqueado: no se encontró agenda/canal de mantenimiento |
 | TC-74 | RNF-22: respaldo diario automático | Operativa | Alta | 7 | Bloqueado: requiere servicio de respaldo y evidencia de ejecución diaria |
 | TC-75 | RNF-23: rendimiento con alto volumen de evidencias | Carga | Media | 7 | Bloqueado: no se almacenan archivos binarios |
