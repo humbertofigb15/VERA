@@ -1,10 +1,10 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { createServer } = require("node:http");
 const jwt = require("jsonwebtoken");
 
 process.env.JWT_SECRET ||= "controls-integration-test-secret-32-characters";
 const app = require("../server");
+const { startTestServer } = require("./helpers/testServer");
 const tokenFor = (id) => jwt.sign({ id }, process.env.JWT_SECRET);
 const json = (token, method = "GET", body) => ({
   method,
@@ -13,10 +13,7 @@ const json = (token, method = "GET", body) => ({
 });
 
 test("HU-15: controls link to valid risks, retain effectiveness evaluations and respect audit scope", async (context) => {
-  const server = createServer(app);
-  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
-  context.after(() => new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve())));
-  const baseUrl = `http://127.0.0.1:${server.address().port}`;
+  const baseUrl = await startTestServer(context, app);
   const manager = tokenFor(3);
   const auditor = tokenFor(5);
 

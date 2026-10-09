@@ -1,18 +1,11 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { createServer } = require("node:http");
 const app = require("../server");
+const { startTestServer } = require("./helpers/testServer");
 
 test("GET / responds with the API health message", async (context) => {
-  const server = createServer(app);
-
-  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
-  context.after(() => new Promise((resolve, reject) => {
-    server.close((error) => error ? reject(error) : resolve());
-  }));
-
-  const address = server.address();
-  const response = await fetch(`http://127.0.0.1:${address.port}/`);
+  const baseUrl = await startTestServer(context, app);
+  const response = await fetch(`${baseUrl}/`);
 
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), {

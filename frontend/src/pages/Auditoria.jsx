@@ -32,7 +32,8 @@ const ACTION_LABELS = {
   RISK_EVALUATED: "Riesgo reevaluado",
   CONTROL_REGISTERED: "Control registrado",
   CONTROL_UPDATED: "Control actualizado",
-  CONTROL_EVALUATED: "Efectividad de control evaluada"
+  CONTROL_EVALUATED: "Efectividad de control evaluada",
+  EVIDENCE_REGISTERED: "Referencia de evidencia registrada"
 };
 
 const WARNING_ACTIONS = [
@@ -90,6 +91,8 @@ const describe = ({ action, target, details }) => {
     case "CONTROL_UPDATED":
     case "CONTROL_EVALUATED":
       return `${details.controlId} · ${details.title}${details.rating ? ` · efectividad ${details.rating}/5` : ""}`;
+    case "EVIDENCE_REGISTERED":
+      return `${details.evidenceId} · ${details.entityType} ${details.entityId} · ${details.title}`;
     case "LOGIN_SUCCESS":
       return details.method === "PASSWORD_2FA" ? "Contraseña + 2FA" : "Contraseña";
     default:

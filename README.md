@@ -125,6 +125,12 @@ El modelo de controles y evaluaciones se conserva en memoria, igual que los ries
 
 Es una bandeja dentro de la aplicación: no envía correo ni push, no crea notificaciones duplicadas y no persiste estados de lectura. El conteo representa la situación actual del portafolio, por lo que cambia cuando cambian los estados de las propuestas. La interfaz y el servicio quedan separados para que el equipo pueda agregar después persistencia, preferencias y canales de entrega.
 
+### HU-16: referencias de evidencia vinculadas
+
+`/evidencias` registra una referencia documental y la relaciona con un riesgo, control o auditoría existente. El registro incluye nombre, tipo, descripción, referencia externa, entidad relacionada, autor y fecha. `GET /api/evidence` permite filtrar por entidad o búsqueda; `POST /api/evidence` valida el destino y conserva el evento `EVIDENCE_REGISTERED`. Las personas con rol Auditoría solo consultan o agregan referencias a riesgos/auditorías asignados y a controles que cubren riesgos asignados.
+
+Este incremento no recibe ni almacena archivos binarios. Acepta un enlace HTTPS o identificador externo (por ejemplo, nombre de archivo o referencia de Drive); solo los enlaces HTTPS se muestran como vínculos clicables. Los metadatos viven en memoria y el repositorio puede reemplazarse posteriormente por almacenamiento de objetos y persistencia sin cambiar el formato del registro.
+
 ### HU-18: historial, actividad y comentarios por auditoría
 
 Desde Planificación, Auditorías activas/aprobadas y el detalle trimestral se puede abrir el historial contextual de cada propuesta. La API `GET /api/planning/:id/history` combina eventos existentes de creación, edición, aprobación, rechazo, inicio y cierre con los comentarios del expediente. El identificador del expediente filtra los eventos relacionados; las vistas de Auditoría mantienen el alcance asignado, y las cuentas sin sesión no pueden consultar el recurso.
