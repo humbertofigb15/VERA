@@ -18,7 +18,7 @@ Los PRs se preparan y se integran en este orden, uno a la vez, con base actualiz
 | 4 | Evidencias, notificaciones, historial, comentarios y trazabilidad. | Pruebas HTTP de alcance, validación y eventos; prueba de carga binaria solo si se implementa esa capacidad. |
 | 5 | Panel, actividad reciente, filtros, búsquedas, reportes y exportaciones. | Pruebas de servicio/API y de interfaz para filtros, resultados vacíos y permisos. |
 | 6 | Flujos web, navegadores, tamaños de pantalla, accesibilidad y usabilidad. | Playwright E2E automatizadas en Chromium, Chrome, Edge y Firefox; emulación de móvil/tablet, axe en login/panel y revisión manual de hardware real. |
-| 7 | Concurrencia, rendimiento y controles operativos/de plataforma. | Carga repetible en staging y evidencia manual/monitoreada para TLS, disponibilidad, respaldo, restauración, escalamiento, privacidad y cumplimiento. |
+| 7 | Concurrencia, rendimiento y controles operativos/de plataforma. | PR-7 prepara perfil k6 de 150/250 VUs y bitácora operativa; ejecución real de carga y evidencia manual/monitoreada dependen de staging y dueños de infraestructura. |
 
 Cada PR debe incluir solo pruebas de comportamiento que correspondan a funciones existentes. Si el requisito depende de una función ausente, el caso queda como bloqueado/pending con el prerrequisito explícito; no se agrega una prueba que simule un resultado aún no ofrecido por VERA.
 
@@ -91,8 +91,8 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 | TC-28 | RF-29: exportar filtro vacío | API/UI | Media | 5 | Bloqueado: falta función de exportación |
 | TC-29 | RF-30/RNF-03: funciones distintas por rol | Unit/API/E2E | Alta | 2 | Parcial: listado/edición y denegación por rol cubiertos en API; falta matriz completa de módulos |
 | TC-30 | RF-33: cerrar auditoría y evitar edición posterior | API/UI | Alta | 3 | Parcial: flujo API y rechazo de transiciones/edición posteriores; reflejo visual queda en PR-5 |
-| TC-31 | RNF-01: 150 usuarios concurrentes | Carga | Alta | 7 | Pendiente: no existe prueba de carga |
-| TC-32 | RNF-01: 250 o más usuarios y umbral de respuesta | Carga | Alta | 7 | Pendiente: no existe prueba de carga ni ambiente representativo |
+| TC-31 | RNF-01: 150 usuarios concurrentes | Carga | Alta | 7 | Implementación preparada en k6; no ejecutada: requiere staging HTTPS y JWT de cuenta de carga activa; límite global actual de 100 solicitudes/IP/15 min puede rechazar la corrida |
+| TC-32 | RNF-01: 250 o más usuarios y umbral de respuesta | Carga | Alta | 7 | Implementación preparada en k6 con 250 VUs, error <1% y p95 <1500 ms; no ejecutada por ausencia de ambiente/token; revisar el límite global 100/IP antes de interpretar capacidad |
 | TC-33 | RNF-06: navegadores compatibles | E2E | Media | 6 | Parcial: Playwright cubre Chromium y Firefox; CI añade Chrome y Edge. La ejecución local de Firefox se limita por el runner Windows; validar el check Linux del PR antes de declarar la matriz completa |
 | TC-34 | RNF-06: navegador no compatible | E2E/manual | Media | 6 | Pendiente; acordar comportamiento soportado y mensaje esperado |
 | TC-35 | RNF-07: escritorio, tablet, orientación | UI/E2E/manual | Media | 6 | Parcial: flujo del panel verificado en Chromium escritorio y viewport tablet; orientación y hardware físico quedan manuales |
@@ -127,7 +127,7 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 | TC-64 | RNF-11: agregar instancia sin interrupción | Operativa/carga | Alta | 7 | Bloqueado: requiere despliegue con escalamiento horizontal |
 | TC-65 | RNF-12: revisión de privacidad y tratamiento de datos | Revisión/manual | Alta | 7 | Pendiente: definir jurisdicción, inventario de datos y responsable de aprobación |
 | TC-66 | RNF-13: conservar historial/evidencia según retención | Operativa/API | Alta | 4 | Bloqueado: almacenamiento actual en memoria, sin política de retención |
-| TC-67 | RNF-14: panel carga en máximo 2 segundos | Rendimiento/E2E | Media | 7 | Pendiente: no hay medición base; definir navegador, red y estadístico |
+| TC-67 | RNF-14: panel carga en máximo 2 segundos | Rendimiento/E2E | Media | 7 | Parcial: perfil k6 propone medir API p95 <1500 ms, pero no se ha ejecutado; falta medición completa de página, red y hardware representativos |
 | TC-68 | RNF-15: reporte de hasta 100 páginas en máximo 10 segundos | Rendimiento | Media | 7 | Bloqueado: reportes no implementados |
 | TC-69 | RNF-16: activar y usar 2FA | API/E2E | Alta | 2 | Cubierto por API: enrolamiento TOTP, código erróneo/expirado y sesión solo tras código válido |
 | TC-70 | RNF-18: WCAG 2.1 AA | A11y/UI/manual | Media | 6 | Parcial: axe analiza login y panel contra reglas WCAG 2.1 A/AA; falta teclado/lector, resto de rutas y revisión manual antes de afirmar conformidad |
