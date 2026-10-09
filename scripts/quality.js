@@ -61,7 +61,7 @@ function elapsed(start) {
 const extractMetrics = () => {
   const testOutput = results.find((result) => result.name === "Pruebas y cobertura")?.stdout ?? "";
   const allOutput = results.map((result) => `${result.stdout}\n${result.stderr}`).join("\n");
-  const readCount = (label) => Number(testOutput.match(new RegExp(`ℹ\\s+${label}\\s+(\\d+)`, "i"))?.[1] ?? 0);
+  const readCount = (label) => Number(testOutput.match(new RegExp(`(?:ℹ\\s+|#\\s*)${label}\\s+(\\d+)`, "i"))?.[1] ?? 0);
   const coverage = testOutput.match(/all files\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)/i);
   const auditMatches = [...allOutput.matchAll(/found\s+(\d+)\s+vulnerabilities?/gi)];
   const jsBundle = allOutput.match(/index-[^\s]+\.js\s+([\d.]+)\s*kB/i);
@@ -100,7 +100,8 @@ const makeMarkdown = (report) => {
     `- **Inicio (UTC):** ${report.startedAt}`,
     `- **Fin (UTC):** ${report.finishedAt}`,
     `- **Duración total:** ${report.durationSeconds.toFixed(2)} s`,
-    `- **Commit:** ${report.commit ?? "no disponible"}`,
+    `- **Commit de la rama:** ${report.commit ?? "no disponible"}`,
+    ...(report.testedSha && report.testedSha !== report.commit ? [`- **Revisión probada por Actions:** ${report.testedSha} (candidato de merge del PR).`] : []),
     "",
     "## Etapas",
     "",
@@ -123,7 +124,7 @@ const main = async () => {
   const started = performance.now();
   for (const stage of stages) results.push(await runStage(stage));
 
-  let commit = process.env.GITHUB_SHA ?? null;
+  let commit = process.env.QUALITY_COMMIT ?? process.env.GITHUB_SHA ?? null;
   if (!commit) {
     try {
       const { execFileSync } = require("node:child_process");
@@ -140,6 +141,7 @@ const main = async () => {
     finishedAt: new Date().toISOString(),
     durationSeconds: elapsed(started),
     commit,
+    testedSha: process.env.GITHUB_SHA ?? null,
     stages: results.map(({ stdout, stderr, ...stage }) => stage),
     metrics: extractMetrics()
   };

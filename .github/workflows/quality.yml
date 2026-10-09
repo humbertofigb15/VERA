@@ -42,6 +42,8 @@ jobs:
         run: npm ci --prefix frontend
 
       - name: Run quality gates and publish job summary
+        env:
+          QUALITY_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
         run: npm run quality
 
       - name: Upload detailed quality report

@@ -41,7 +41,7 @@ npm run audit --prefix frontend
 
 ## Reporte por ejecución
 
-El runner [`scripts/quality.js`](scripts/quality.js) registra inicio y fin UTC, commit, estado y duración de cada etapa y total. También resume cantidad de pruebas aprobadas/fallidas, cobertura backend, hallazgos npm y tamaño del bundle JavaScript cuando se puede extraer del build.
+El runner [`scripts/quality.js`](scripts/quality.js) registra inicio y fin UTC, commit de la rama, revisión probada por Actions, estado y duración de cada etapa y total. También resume cantidad de pruebas aprobadas/fallidas, cobertura backend, hallazgos npm y tamaño del bundle JavaScript cuando se puede extraer del build. En eventos de pull request, Actions prueba el candidato de merge y el reporte identifica también el commit fuente de la rama.
 
 Genera estos archivos locales, ignorados por Git:
 
