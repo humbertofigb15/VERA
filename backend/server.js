@@ -1,9 +1,11 @@
 const express = require("express");
 const cors = require("cors");
+const { rateLimit } = require("express-rate-limit");
 const path = require("node:path");
 
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
+const { getJwtSecret } = require("./config/jwtSecret");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const auditRoutes = require("./routes/auditRoutes");
@@ -14,6 +16,12 @@ const app = express();
 app.set("trust proxy", 1); // 1 = one proxy hop in front of your app
 
 app.use(cors());
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: "draft-8",
+  legacyHeaders: false
+}));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
@@ -30,6 +38,7 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 if (require.main === module) {
+  getJwtSecret();
   app.listen(PORT, () => {
     console.log(`VERA backend ejecutándose en http://localhost:${PORT}`);
   });

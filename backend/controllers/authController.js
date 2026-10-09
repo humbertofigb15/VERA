@@ -6,6 +6,7 @@ const userRepository = require("../repositories/userRepository");
 const { logAccessChange, logActivity } = require("../services/auditLogger");
 const { recordLogin } = require("../services/loginLogger");
 const { DEFAULT_ROLE } = require("../config/roles");
+const { getJwtSecret } = require("../config/jwtSecret");
 const {
   USER_STATUS,
   INSTITUTIONAL_DOMAINS,
@@ -16,8 +17,6 @@ const {
   isValidName
 } = require("../config/accountRules");
 
-
-const SECRET_KEY = "vera-secret-key";
 
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME_MS = 5 * 60 * 1000; // 5 minutes
@@ -88,7 +87,7 @@ const issueSession = async (req, res, user, method = "PASSWORD") => {
   });
   const token = jwt.sign(
     { id: user.id, username: user.username, role: user.role },
-    SECRET_KEY,
+    getJwtSecret(),
     { expiresIn: "2h" }
   );
 
@@ -151,7 +150,7 @@ const login = async (req, res) => {
   if (user.twoFactorEnabled) {
     const tempToken = jwt.sign(
       { id: user.id, purpose: "2fa" },
-      SECRET_KEY,
+      getJwtSecret(),
       { expiresIn: "5m" }
     );
     return res.json({ requires2FA: true, tempToken });
@@ -172,7 +171,7 @@ const verify2FA = async (req, res) => {
 
   let payload;
   try {
-    payload = jwt.verify(tempToken, SECRET_KEY);
+    payload = jwt.verify(tempToken, getJwtSecret());
   } catch {
     return res.status(401).json({ message: "Sesión expirada, inicia sesión de nuevo" });
   }
