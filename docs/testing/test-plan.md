@@ -67,7 +67,7 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 | TC-04 | RF-03: credenciales inexistentes | API | Alta | 2 | Cubierto por API: respuesta 401 |
 | TC-05 | RF-03: cuenta deshabilitada | API | Alta | 2 | Cubierto por API: respuesta 403 |
 | TC-06 | RF-04: cinco intentos fallidos y bloqueo | Unit/API | Alta | 2 | Cubierto por API: quinto fallo bloquea, emite Retry-After y el bloqueo continúa |
-| TC-07 | RF-09: actividad reciente tras crear auditoría | API/UI | Media | 5 | Parcial: hay eventos de dominio; falta verificar la sección reciente del panel |
+| TC-07 | RF-09: actividad reciente tras crear auditoría | API/UI | Media | 5 | Bloqueado parcialmente: existen eventos en bitácora, pero no una sección de actividad reciente en el panel |
 | TC-08 | RF-10: navegación del menú | E2E | Media | 6 | Pendiente |
 | TC-09 | RF-11: cerrar sesión y proteger rutas | API/E2E | Alta | 2 | Pendiente |
 | TC-10 | RF-12: crear auditoría con datos completos | API/E2E | Alta | 3 | Parcial: se prueba propuesta/aprobación, no el flujo completo de captura de auditoría |
@@ -82,10 +82,10 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 | TC-19 | RF-19: archivo excede límite | API/E2E | Media | 4 | Bloqueado: falta carga binaria y límite configurado |
 | TC-20 | RF-24: notificación al responsable | API/E2E | Media | 4 | Parcial: bandeja derivada, prioridad y alcance por rol probados; falta canal externo/evento de entrega |
 | TC-21 | RF-24: marcar/gestionar como leída | API/E2E | Media | 4 | Bloqueado: la bandeja no persiste estados de lectura |
-| TC-22 | RF-27: aplicar filtros | API/E2E | Media | 5 | Parcial: existen filtros de riesgos/evidencias, no de reportes |
-| TC-23 | RF-27: búsqueda con coincidencias | API/E2E | Media | 5 | Parcial: búsqueda de riesgos/evidencias; falta búsqueda global/reportes |
-| TC-24 | RF-27: búsqueda sin resultados | API/UI | Media | 5 | Pendiente |
-| TC-25 | RF-27: filtro sin resultados | API/UI | Media | 5 | Pendiente |
+| TC-22 | RF-27: aplicar filtros | API/E2E | Media | 5 | Parcial: filtros de riesgos/evidencias se cubren por API; filtros de reportes no implementados |
+| TC-23 | RF-27: búsqueda con coincidencias | API/E2E | Media | 5 | Cubierto parcialmente por API para riesgos y evidencias; falta búsqueda global/reportes/UI |
+| TC-24 | RF-27: búsqueda sin resultados | API/UI | Media | 5 | Cubierto por API para evidencias; falta mensaje visual y búsqueda de reportes |
+| TC-25 | RF-27: filtro sin resultados | API/UI | Media | 5 | Parcial: falta estado vacío de filtros UI y reporte |
 | TC-26 | RF-29: exportación completa | API/E2E | Media | 5 | Bloqueado: no se encontró función de reportes/exportación en la línea base |
 | TC-27 | RF-29: exportar datos filtrados | API/E2E | Media | 5 | Bloqueado: falta función de exportación |
 | TC-28 | RF-29: exportar filtro vacío | API/UI | Media | 5 | Bloqueado: falta función de exportación |
@@ -100,10 +100,10 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 | TC-37 | RNF-07: diseño responsivo en dispositivos | UI/manual | Media | 6 | Pendiente |
 | TC-38 | RNF-17: política mínima de longitud, mayúsculas, minúsculas y números | Unit/API | Alta | 2 | Cubierto por unitarias: frontera de ocho caracteres y cada categoría requerida |
 | TC-39 | RF-02: administrador edita rol y deshabilita usuario | API/E2E | Alta | 2 | Cubierto por API: cambio de rol/estado, actor sin permiso y sesión anterior invalidada/reactivada |
-| TC-40 | RF-05: panel con gráficas, métricas y acciones | API/E2E | Media | 5 | Parcial: datos y permisos del dashboard tienen prueba API; falta render/UI |
-| TC-41 | RF-06: total por trimestre seleccionado | Unit/API/E2E | Media | 5 | Parcial: datos de portafolio se prueban; selector y conteo de trimestre requieren cobertura explícita |
-| TC-42 | RF-07: auditorías activas pendientes | API/UI | Alta | 3 | Parcial: endpoint de auditorías activas probado; falta UI y casos de filtrado/orden |
-| TC-43 | RF-08: matriz de riesgo del panel | Unit/API/UI | Alta | 5 | Parcial: se valida estructura de matriz en API; falta casos con distribución de riesgos y render |
+| TC-40 | RF-05: panel con gráficas, métricas y acciones | API/E2E | Media | 5 | Parcial: métricas, roles y matriz cubiertos por unitarias/API; render/UI se agrega en PR-6 |
+| TC-41 | RF-06: total por trimestre seleccionado | Unit/API/E2E | Media | 5 | Bloqueado parcialmente: la UI no ofrece selector de periodo ni conteo anual/semestral/trimestral hoy |
+| TC-42 | RF-07: auditorías activas pendientes | API/UI | Alta | 3 | Parcial: endpoint y alcance por rol probados; falta UI y casos de filtrado/orden |
+| TC-43 | RF-08: matriz de riesgo del panel | Unit/API/UI | Alta | 5 | Parcial: nueve celdas, conteos activos y permisos cubiertos por unitarias/API; falta render UI |
 | TC-44 | RF-16: riesgo válido ligado a auditoría | API | Alta | 3 | Cubierto por API: registro ligado a una auditoría válida y rechazo de vínculo inexistente |
 | TC-45 | RF-17: impacto, probabilidad y severidad calculada | Unit/API | Alta | 3 | Cubierto por API y unitarias para las nueve combinaciones de impacto/probabilidad |
 | TC-46 | RF-18: control asociado al riesgo | API | Alta | 3 | Existente: enlace de controles a riesgos y validación de IDs |
