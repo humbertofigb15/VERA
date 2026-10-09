@@ -58,9 +58,12 @@ Un gate fallido hace fallar el job. El artifact permite revisar los tiempos y m�
 
 ## Alcance y límites actuales
 
-- Las pruebas actuales son unitarias y una integración de humo del endpoint raíz. No prueban todavía los flujos de autenticación, roles, persistencia Supabase ni cambios SQL.
-- No hay todavía pruebas end-to-end de navegador, pruebas de carga/estrés, fuzzing, análisis estático de seguridad dedicado ni mediciones de disponibilidad de producción.
-- La cobertura global observada en la línea base inicial fue 48.23%; el valor se reporta y no bloquea. Las reglas de cuenta medidas en esa ejecución tuvieron 100%. Aumentar cobertura con pruebas de comportamiento antes de establecer un umbral evita imponer un número sin contexto.
-- La auditoría npm detecta vulnerabilidades publicadas en el árbol de dependencias; no es un análisis de seguridad del código fuente.
+- La suite backend incluye pruebas unitarias y de integración HTTP con `node:test`: reglas de cuenta, secreto JWT, salud de la API, dashboard por rol, propuestas/aprobación/rechazo, riesgos, controles, evidencias referenciadas, notificaciones derivadas e historial/comentarios de propuestas. La matriz de los 78 casos recibidos y el estado de cobertura por requisito están en [`docs/testing/test-plan.md`](docs/testing/test-plan.md).
+- Las pruebas de API existentes no equivalen a pruebas de extremo a extremo en navegador. Aún faltan matrices completas de autenticación/administración, navegadores y dispositivos, accesibilidad, carga/estrés y mediciones de disponibilidad.
+- Los datos del prototipo se mantienen en memoria. Evidencias son referencias y metadatos, no archivos binarios. Las pruebas de persistencia, retención, restauración y carga de archivos requieren capacidades/ambientes adicionales.
+- La cobertura se reporta como señal y no tiene umbral mínimo global. Primero se ampliará cobertura basada en comportamiento y se observará la línea base antes de proponer un umbral.
+- La auditoría npm detecta vulnerabilidades publicadas en dependencias; no es un análisis de seguridad del código fuente.
+
+El plan separa lo que puede ejecutarse automáticamente en PR de las validaciones que requieren staging, monitoreo mensual o revisión manual. Ningún caso se reporta como cubierto únicamente por estar planeado.
 
 Estas métricas describen el commit y el entorno de una ejecución concreta. No equivalen a garantía de ausencia de defectos ni a un SLO operativo.
