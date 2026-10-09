@@ -2,7 +2,7 @@
   "name": "vera-quality",
   "private": true,
   "scripts": {
-    "quality": "npm run quality --prefix backend && npm run quality --prefix frontend",
+    "quality": "node scripts/quality.js",
     "test": "npm test --prefix backend",
     "test:coverage": "npm run test:coverage --prefix backend",
     "lint": "npm run lint --prefix backend && npm run lint --prefix frontend",
