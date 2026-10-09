@@ -107,3 +107,43 @@ test("HU-22: only authorized roles can create proposals and anonymous users cann
     assert.equal(deleted.status, 200);
   });
 });
+
+test("HU-23: rejection requires a reason, records the decision and makes the proposal terminal", async (context) => {
+  await withServer(context, async (baseUrl) => {
+    const directorToken = tokenFor(2);
+    const managerToken = tokenFor(3);
+    const proposalBody = {
+      title: `HU-23 rejection ${Date.now()}`,
+      objective: "Asegurar que la decisión de rechazo sea trazable.",
+      area: "Finanzas",
+      year: 2026
+    };
+    const createdResponse = await fetch(`${baseUrl}/api/planning`, json(managerToken, "POST", proposalBody));
+    assert.equal(createdResponse.status, 201);
+    const proposal = (await createdResponse.json()).proposal;
+
+    const unauthorized = await fetch(`${baseUrl}/api/planning/${proposal.id}/reject`, json(managerToken, "POST", { reason: "No procede" }));
+    assert.equal(unauthorized.status, 403);
+
+    const missingReason = await fetch(`${baseUrl}/api/planning/${proposal.id}/reject`, json(directorToken, "POST", { reason: "   " }));
+    assert.equal(missingReason.status, 400);
+
+    const reason = "Falta delimitar el alcance y los controles que se revisarán.";
+    const rejectedResponse = await fetch(`${baseUrl}/api/planning/${proposal.id}/reject`, json(directorToken, "POST", { reason }));
+    assert.equal(rejectedResponse.status, 200);
+    const rejected = (await rejectedResponse.json()).proposal;
+    assert.equal(rejected.status, "REJECTED");
+    assert.equal(rejected.rejectionReason, reason);
+    assert.equal(rejected.rejectedBy.name, "demo");
+    assert.ok(rejected.rejectedAt);
+
+    const repeated = await fetch(`${baseUrl}/api/planning/${proposal.id}/reject`, json(directorToken, "POST", { reason }));
+    assert.equal(repeated.status, 409);
+    const edit = await fetch(`${baseUrl}/api/planning/${proposal.id}`, json(managerToken, "PUT", proposalBody));
+    assert.equal(edit.status, 409);
+    const approve = await fetch(`${baseUrl}/api/planning/${proposal.id}/approve`, json(directorToken, "POST", { quarter: "Q2" }));
+    assert.equal(approve.status, 409);
+    const remove = await fetch(`${baseUrl}/api/planning/${proposal.id}`, json(managerToken, "DELETE"));
+    assert.equal(remove.status, 409);
+  });
+});

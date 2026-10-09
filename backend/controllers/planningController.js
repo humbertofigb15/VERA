@@ -11,6 +11,7 @@ const MIN_YEAR = 2020;
 const MAX_YEAR = 2100;
 
 const DUPLICATE_MESSAGE = "Ya existe una propuesta con el mismo título, área y año.";
+const isTerminal = (proposal) => proposal.status === "APPROVED" || proposal.status === "REJECTED";
 
 const text = (value) => String(value ?? "").trim();
 const isDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value));
@@ -101,8 +102,8 @@ const createProposal = (req, res) => {
 const updateProposal = (req, res) => {
   const current = planningRepository.findById(req.params.id);
   if (!current) return res.status(404).json({ message: "Propuesta no encontrada." });
-  if (current.status === "APPROVED") {
-    return res.status(409).json({ message: "Una propuesta aprobada ya no se puede editar." });
+  if (isTerminal(current)) {
+    return res.status(409).json({ message: "Una propuesta resuelta ya no se puede editar." });
   }
 
   const { data, error } = parseProposal(req.body);
@@ -127,8 +128,8 @@ const updateProposal = (req, res) => {
 const approveProposal = (req, res) => {
   const current = planningRepository.findById(req.params.id);
   if (!current) return res.status(404).json({ message: "Propuesta no encontrada." });
-  if (current.status === "APPROVED") {
-    return res.status(409).json({ message: "Esta propuesta ya fue aprobada." });
+  if (isTerminal(current)) {
+    return res.status(409).json({ message: "Esta propuesta ya fue resuelta." });
   }
 
   const quarter = text(req.body.quarter) || current.quarter;
@@ -150,12 +151,39 @@ const approveProposal = (req, res) => {
   res.json({ proposal });
 };
 
+// POST /api/planning/:id/reject
+const rejectProposal = (req, res) => {
+  const current = planningRepository.findById(req.params.id);
+  if (!current) return res.status(404).json({ message: "Propuesta no encontrada." });
+  if (isTerminal(current)) {
+    return res.status(409).json({ message: "Esta propuesta ya fue resuelta." });
+  }
+
+  const rejectionReason = text(req.body.reason);
+  if (!rejectionReason) {
+    return res.status(400).json({ message: "Escribe el motivo del rechazo." });
+  }
+
+  const proposal = planningRepository.reject(current.id, {
+    rejectionReason,
+    rejectedBy: { id: req.user.id, name: req.user.username }
+  });
+
+  logActivity({
+    actor: req.user,
+    action: "AUDIT_PROPOSAL_REJECTED",
+    details: { proposalId: proposal.id, title: proposal.title, reason: rejectionReason }
+  });
+
+  res.json({ proposal });
+};
+
 // DELETE /api/planning/:id  (solo propuestas abiertas)
 const deleteProposal = (req, res) => {
   const current = planningRepository.findById(req.params.id);
   if (!current) return res.status(404).json({ message: "Propuesta no encontrada." });
-  if (current.status === "APPROVED") {
-    return res.status(409).json({ message: "Una propuesta aprobada ya no se puede eliminar." });
+  if (isTerminal(current)) {
+    return res.status(409).json({ message: "Una propuesta resuelta ya no se puede eliminar." });
   }
 
   planningRepository.remove(current.id);
@@ -176,5 +204,6 @@ module.exports = {
   createProposal,
   updateProposal,
   approveProposal,
+  rejectProposal,
   deleteProposal
 };
