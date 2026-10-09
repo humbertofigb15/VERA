@@ -56,6 +56,7 @@ module.exports = {
   USER_STATUS,
   INSTITUTIONAL_DOMAINS,
   isInstitutionalEmail,
+  isValidName,
   PASSWORD_RULE_MESSAGE,
   isValidPassword
 };

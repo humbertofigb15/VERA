@@ -1,2 +1,6 @@
 .DS_Store
 .env
+node_modules/
+coverage/
+test-results/
+playwright-report/

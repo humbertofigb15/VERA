@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "audit": "npm audit --audit-level=high",
+    "quality": "npm run lint && npm run build && npm run audit",
     "preview": "vite preview"
   },
   "dependencies": {
