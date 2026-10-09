@@ -3,7 +3,10 @@
 **VERA** es una aplicación web en desarrollo para apoyar flujos de auditoría, planificación y administración de usuarios. Este repositorio incluye una interfaz React y una API Express, junto con verificaciones de calidad ejecutadas localmente y en GitHub Actions.
 
 [![Calidad de software](https://github.com/humbertofigb15/VERA/actions/workflows/quality.yml/badge.svg?branch=main)](https://github.com/humbertofigb15/VERA/actions/workflows/quality.yml)
+[![Ejecución completa](https://github.com/humbertofigb15/VERA/actions/workflows/classroom-quality.yml/badge.svg?branch=main)](https://github.com/humbertofigb15/VERA/actions/workflows/classroom-quality.yml)
 [![CodeQL](https://github.com/humbertofigb15/VERA/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/humbertofigb15/VERA/actions/workflows/codeql.yml)
+
+[▶ Abrir ejecución completa de calidad y pruebas](https://github.com/humbertofigb15/VERA/actions/workflows/classroom-quality.yml) · [Guía rápida para revisión docente](docs/testing/professor-quick-run.md)
 
 > **Estado:** prototipo académico. Los datos de usuarios y propuestas se mantienen en memoria y se reinician al reiniciar el backend. El repositorio contiene cuentas de demostración; no lo despliegues con datos reales ni lo uses como servicio de producción.
 
@@ -86,6 +89,8 @@ Desde la raíz del proyecto:
 | `npm run audit` | Auditoría de dependencias de backend y frontend. |
 
 El flujo de GitHub Actions ejecuta las verificaciones de calidad en pull requests dirigidos a `main` y en actualizaciones de `main`. El reporte detallado del workflow se conserva como artefacto de Actions durante 14 días.
+
+El workflow **VERA — Calidad y pruebas completas** ejecuta en una sola corrida calidad backend/frontend, compatibilidad y accesibilidad de interfaz, y CodeQL. Se puede iniciar desde **Actions → VERA — Calidad y pruebas completas → Run workflow** y presenta resumen, resultados y duración sin instalar herramientas localmente. También corre cada lunes. La prueba de carga permanece separada porque requiere un staging aprobado y una cuenta dedicada. Revisa [la guía rápida para revisión docente](docs/testing/professor-quick-run.md).
 
 ### HU-22: creación de propuestas de auditoría
 
