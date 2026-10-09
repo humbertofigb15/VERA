@@ -20,7 +20,7 @@
 | Componente | Tecnologías |
 | --- | --- |
 | Frontend | React, Vite, React Router |
-| Backend | Node.js, Express |
+| Backend | Node.js, Express, express-rate-limit |
 | Autenticación | JWT, bcryptjs, TOTP |
 | Calidad | Node test runner, cobertura, ESLint, build de Vite, npm audit |
 | Automatización | GitHub Actions, CodeQL y Dependabot |
@@ -100,10 +100,11 @@ CodeQL analiza JavaScript y TypeScript en los pull requests, en `main` y semanal
 ## Seguridad y limitaciones
 
 - Configura una clave JWT aleatoria en `.env`; el backend se detiene si falta o tiene menos de 32 caracteres.
+- La API limita cada IP a 100 solicitudes por ventana de 15 minutos y responde con `429` al excederla. El almacenamiento predeterminado del límite es en memoria y no se comparte entre varias instancias.
 - `.env` está excluido de Git. Comparte únicamente `.env.example`, nunca el archivo local.
 - Las cuentas y propuestas se guardan en memoria, sin persistencia duradera.
 - Las cuentas y contraseñas de demostración son solo para desarrollo y no deben reutilizarse.
-- Antes de cualquier despliegue, se requiere almacenamiento persistente, gestión de secretos de plataforma, configuración de CORS, revisión de cuentas de demostración y una evaluación de seguridad del entorno.
+- Antes de cualquier despliegue, se requiere almacenamiento persistente, gestión de secretos de plataforma, configuración de CORS, un almacén compartido para límites de solicitudes, revisión de cuentas de demostración y una evaluación de seguridad del entorno.
 
 ## Contribuir
 
