@@ -23,7 +23,7 @@
 | Backend | Node.js, Express |
 | Autenticación | JWT, bcryptjs, TOTP |
 | Calidad | Node test runner, cobertura, ESLint, build de Vite, npm audit |
-| Automatización | GitHub Actions, CodeQL y revisión de dependencias |
+| Automatización | GitHub Actions, CodeQL y Dependabot |
 
 ## Requisitos
 
@@ -83,7 +83,7 @@ Desde la raíz del proyecto:
 
 El flujo de GitHub Actions ejecuta las verificaciones de calidad en pull requests dirigidos a `main` y en actualizaciones de `main`. El reporte detallado del workflow se conserva como artefacto de Actions durante 14 días.
 
-CodeQL analiza JavaScript y TypeScript en los pull requests, en `main` y semanalmente. Dependency Review revisa dependencias agregadas o actualizadas en los pull requests y bloquea las vulnerabilidades nuevas de severidad alta o crítica. Dependabot revisa semanalmente dependencias npm y GitHub Actions.
+CodeQL analiza JavaScript y TypeScript en los pull requests, en `main` y semanalmente. `npm audit` revisa dependencias de backend y frontend en el flujo de calidad. Dependabot revisa semanalmente dependencias npm y GitHub Actions.
 
 ## Estructura
 
