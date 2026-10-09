@@ -164,6 +164,11 @@ test("HU-09: risk is derived from probability and impact; approved audits follow
     assert.equal(created.riskScore, 6);
     assert.equal(created.risk, "Alto");
 
+    const prematureStart = await fetch(`${baseUrl}/api/planning/${created.id}/start`, json(directorToken, "POST", {}));
+    assert.equal(prematureStart.status, 409);
+    const prematureClose = await fetch(`${baseUrl}/api/planning/${created.id}/close`, json(directorToken, "POST", {}));
+    assert.equal(prematureClose.status, 409);
+
     const approval = await fetch(`${baseUrl}/api/planning/${created.id}/approve`, json(directorToken, "POST", { quarter: "Q2" }));
     assert.equal(approval.status, 200);
 
@@ -191,5 +196,7 @@ test("HU-09: risk is derived from probability and impact; approved audits follow
     assert.ok(!(await noLongerActive.json()).audits.some((audit) => audit.id === created.id));
     const repeatedClose = await fetch(`${baseUrl}/api/planning/${created.id}/close`, json(directorToken, "POST", {}));
     assert.equal(repeatedClose.status, 409);
+    const editClosed = await fetch(`${baseUrl}/api/planning/${created.id}`, json(directorToken, "PUT", body));
+    assert.equal(editClosed.status, 409);
   });
 });
