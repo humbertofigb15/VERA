@@ -1,6 +1,5 @@
 const { PLANNING_APPROVE_ROLES, PLANNING_CREATE_ROLES } = require("../config/roles");
-
-const riskFromScore = (score) => score <= 2 ? "Bajo" : score <= 4 ? "Medio" : "Alto";
+const { classifyRisk } = require("../config/riskRules");
 
 const dashboardCopy = {
   SUPER_ADMIN: {
@@ -46,7 +45,7 @@ const getDashboardForUser = (user, proposals) => {
     return {
       likelihood,
       impact,
-      risk: riskFromScore(score),
+      risk: classifyRisk(score),
       count: activeAudits.filter((audit) => (audit.likelihood ?? 2) === likelihood && (audit.impact ?? 2) === impact).length
     };
   }));

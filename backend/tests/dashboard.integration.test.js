@@ -35,6 +35,11 @@ test("HU-07: dashboard data is authenticated and scoped according to the user's 
   assert.equal(proposalResponse.status, 201);
   const proposal = (await proposalResponse.json()).proposal;
 
+  const activeResponse = await fetch(`${baseUrl}/api/planning/${proposal.id}/approve`, json(tokenFor(2), "POST", { quarter: "Q2" }));
+  assert.equal(activeResponse.status, 200);
+  const startedResponse = await fetch(`${baseUrl}/api/planning/${proposal.id}/start`, json(tokenFor(2), "POST", {}));
+  assert.equal(startedResponse.status, 200);
+
   const auditorResponse = await fetch(`${baseUrl}/api/dashboard`, json(tokenFor(5)));
   assert.equal(auditorResponse.status, 200);
   const auditorDashboard = await auditorResponse.json();
@@ -44,6 +49,8 @@ test("HU-07: dashboard data is authenticated and scoped according to the user's 
   assert.equal(auditorDashboard.permissions.canCreate, false);
   assert.equal(auditorDashboard.permissions.canApprove, false);
   assert.equal(auditorDashboard.metrics.total, 1);
+  assert.equal(auditorDashboard.metrics.active, 1);
+  assert.equal(auditorDashboard.riskMatrix.flat().reduce((sum, cell) => sum + cell.count, 0), 1);
 
   const auditorPlanningResponse = await fetch(`${baseUrl}/api/planning`, json(tokenFor(5)));
   const auditorPlanning = await auditorPlanningResponse.json();
@@ -59,5 +66,5 @@ test("HU-07: dashboard data is authenticated and scoped according to the user's 
   assert.ok(directorDashboard.metrics.total > auditorDashboard.metrics.total);
   assert.equal(directorDashboard.permissions.canApprove, true);
   assert.ok(directorDashboard.statusCounts.some((entry) => entry.status === "OPEN" && entry.count > 0));
-  assert.equal(directorDashboard.riskMatrix.flat().reduce((sum, cell) => sum + cell.count, 0), 0);
+  assert.equal(directorDashboard.riskMatrix.flat().reduce((sum, cell) => sum + cell.count, 0), 1);
 });
