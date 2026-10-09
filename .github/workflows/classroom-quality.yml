@@ -1,0 +1,136 @@
+name: VERA — Calidad y pruebas completas
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 14 * * 1"
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+  security-events: write
+
+concurrency:
+  group: classroom-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  all-checks:
+    name: Calidad, backend, navegadores y CodeQL
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Start overall run timer
+        run: |
+          mkdir -p quality-report
+          date +%s%3N > quality-report/classroom-start-ms.txt
+
+      - name: Install backend dependencies
+        run: npm ci --prefix backend
+
+      - name: Install frontend dependencies
+        run: npm ci --prefix frontend
+
+      - name: Start CodeQL timer
+        run: echo "CODEQL_START_MS=$(date +%s%3N)" >> "$GITHUB_ENV"
+
+      - name: Initialize CodeQL
+        id: codeql-init
+        uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          config-file: ./.github/codeql/codeql-config.yml
+        continue-on-error: true
+
+      - name: Run unit, integration, lint, build and dependency checks
+        id: quality
+        continue-on-error: true
+        env:
+          QUALITY_COMMIT: ${{ github.sha }}
+        run: npm run quality
+
+      - name: Install Chrome, Edge, Firefox and Playwright dependencies
+        run: npx playwright install --with-deps chromium firefox chrome msedge
+        working-directory: frontend
+
+      - name: Run browser, responsive and accessibility cases
+        id: e2e
+        continue-on-error: true
+        run: npm run test:e2e
+        working-directory: frontend
+        env:
+          CI: "true"
+          PLAYWRIGHT_BRANDED_BROWSERS: "1"
+
+      - name: Analyze source with CodeQL
+        id: codeql-analysis
+        if: always() && steps.codeql-init.outcome == 'success'
+        uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          category: /language:javascript-typescript
+        continue-on-error: true
+
+      - name: Record CodeQL duration
+        if: always()
+        run: |
+          if [[ -n "${CODEQL_START_MS:-}" ]]; then
+            end_ms=$(date +%s%3N)
+            echo "CODEQL_DURATION_SECONDS=$(( (end_ms - CODEQL_START_MS) / 1000 ))" >> "$GITHUB_ENV"
+          else
+            echo "CODEQL_DURATION_SECONDS=" >> "$GITHUB_ENV"
+          fi
+
+      - name: Publish one-page executive report
+        if: always()
+        env:
+          QUALITY_RESULT: ${{ steps.quality.outcome }}
+          E2E_RESULT: ${{ steps.e2e.outcome }}
+          CODEQL_INIT_RESULT: ${{ steps.codeql-init.outcome }}
+          CODEQL_RESULT: ${{ steps.codeql-analysis.outcome }}
+          CODEQL_DURATION_SECONDS: ${{ env.CODEQL_DURATION_SECONDS }}
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GITHUB_COMMIT: ${{ github.sha }}
+          GITHUB_EVENT: ${{ github.event_name }}
+        run: python3 scripts/classroom-summary.py
+
+      - name: Upload one-click reports and browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: vera-classroom-quality-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            quality-report/
+            frontend/playwright-report/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Fail the run if any quality suite failed
+        if: always()
+        env:
+          QUALITY_RESULT: ${{ steps.quality.outcome }}
+          E2E_RESULT: ${{ steps.e2e.outcome }}
+          CODEQL_INIT_RESULT: ${{ steps.codeql-init.outcome }}
+          CODEQL_RESULT: ${{ steps.codeql-analysis.outcome }}
+        run: |
+          if [[ "$QUALITY_RESULT" != "success" || "$E2E_RESULT" != "success" || "$CODEQL_INIT_RESULT" != "success" || "$CODEQL_RESULT" != "success" ]]; then
+            echo "At least one quality suite did not pass. Review the report and logs above." >&2
+            exit 1
+          fi
