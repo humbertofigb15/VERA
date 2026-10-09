@@ -14,6 +14,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const riskRoutes = require("./routes/riskRoutes");
 const controlRoutes = require("./routes/controlRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const evidenceRoutes = require("./routes/evidenceRoutes");
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/risks", riskRoutes);
 app.use("/api/controls", controlRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/evidence", evidenceRoutes);
 
 app.get("/", (req, res) => {
   res.json({
