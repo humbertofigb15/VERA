@@ -15,7 +15,7 @@ import {
   PLANNING_APPROVE_ROLES,
   PLANNING_CREATE_ROLES,
   QUARTERS,
-  RISK_LEVELS
+  RISK_FACTORS
 } from "../constants/planning";
 import "./Planning.css";
 
@@ -24,7 +24,8 @@ const EMPTY_FORM = {
   area: "",
   responsibleId: "",
   type: "Interna",
-  risk: "Medio",
+  likelihood: 2,
+  impact: 2,
   quarter: "",
   year: new Date().getFullYear(),
   startDate: "",
@@ -94,7 +95,8 @@ function Planificacion() {
       area: item.area,
       responsibleId: item.responsibleId ?? "",
       type: item.type,
-      risk: item.risk,
+      likelihood: item.likelihood ?? 2,
+      impact: item.impact ?? 2,
       quarter: item.quarter,
       year: item.year,
       startDate: item.startDate,
@@ -358,9 +360,14 @@ function Planificacion() {
                       {AUDIT_TYPES.map((type) => <option key={type}>{type}</option>)}
                     </select>
                   </label>
-                  <label>Nivel de riesgo
-                    <select value={form.risk} onChange={(event) => updateForm("risk", event.target.value)}>
-                      {RISK_LEVELS.map((risk) => <option key={risk}>{risk}</option>)}
+                  <label>Probabilidad del riesgo
+                    <select value={form.likelihood} onChange={(event) => updateForm("likelihood", Number(event.target.value))}>
+                      {RISK_FACTORS.map((factor) => <option key={factor.value} value={factor.value}>{factor.label}</option>)}
+                    </select>
+                  </label>
+                  <label>Impacto del riesgo
+                    <select value={form.impact} onChange={(event) => updateForm("impact", Number(event.target.value))}>
+                      {RISK_FACTORS.map((factor) => <option key={factor.value} value={factor.value}>{factor.label}</option>)}
                     </select>
                   </label>
                   <label>Trimestre estimado

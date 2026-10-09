@@ -6,22 +6,28 @@ const { allowRoles } = require("../middleware/roleMiddleware");
 const { PLANNING_CREATE_ROLES, PLANNING_APPROVE_ROLES } = require("../config/roles");
 const {
   listProposals,
+  listActiveAudits,
   listAuditors,
   createProposal,
   updateProposal,
   approveProposal,
+  startAudit,
+  closeAudit,
   rejectProposal,
   deleteProposal
 } = require("../controllers/planningController");
 
 // Todos los usuarios con sesión pueden consultar el tablero.
 router.get("/", verifyToken, listProposals);
+router.get("/active", verifyToken, listActiveAudits);
 router.get("/auditors", verifyToken, allowRoles(...PLANNING_CREATE_ROLES), listAuditors);
 
 router.post("/", verifyToken, allowRoles(...PLANNING_CREATE_ROLES), createProposal);
 router.put("/:id", verifyToken, allowRoles(...PLANNING_CREATE_ROLES), updateProposal);
 router.delete("/:id", verifyToken, allowRoles(...PLANNING_CREATE_ROLES), deleteProposal);
 router.post("/:id/approve", verifyToken, allowRoles(...PLANNING_APPROVE_ROLES), approveProposal);
+router.post("/:id/start", verifyToken, allowRoles(...PLANNING_APPROVE_ROLES), startAudit);
+router.post("/:id/close", verifyToken, allowRoles(...PLANNING_APPROVE_ROLES), closeAudit);
 router.post("/:id/reject", verifyToken, allowRoles(...PLANNING_APPROVE_ROLES), rejectProposal);
 
 module.exports = router;

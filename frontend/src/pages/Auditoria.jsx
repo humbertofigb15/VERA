@@ -23,7 +23,9 @@ const ACTION_LABELS = {
   AUDIT_PROPOSAL_UPDATED: "Propuesta de auditoría editada",
   AUDIT_PROPOSAL_APPROVED: "Propuesta de auditoría aprobada",
   AUDIT_PROPOSAL_REJECTED: "Propuesta de auditoría rechazada",
-  AUDIT_PROPOSAL_DELETED: "Propuesta de auditoría eliminada"
+  AUDIT_PROPOSAL_DELETED: "Propuesta de auditoría eliminada",
+  AUDIT_STARTED: "Auditoría iniciada",
+  AUDIT_CLOSED: "Auditoría cerrada"
 };
 
 const WARNING_ACTIONS = [
@@ -69,6 +71,9 @@ const describe = ({ action, target, details }) => {
       return `${details.proposalId} · ${details.title} (${details.quarter})`;
     case "AUDIT_PROPOSAL_REJECTED":
       return `${details.proposalId} · ${details.title} · Motivo: ${details.reason}`;
+    case "AUDIT_STARTED":
+    case "AUDIT_CLOSED":
+      return `${details.auditId} · ${details.title}`;
     case "LOGIN_SUCCESS":
       return details.method === "PASSWORD_2FA" ? "Contraseña + 2FA" : "Contraseña";
     default:

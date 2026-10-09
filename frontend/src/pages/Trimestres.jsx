@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, CalendarRange, CheckCircle2, Clock, Search } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarRange, CheckCircle2, Clock, Search, Activity } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
@@ -6,13 +6,19 @@ import { getPlanningAudits } from "../services/planningService";
 import { QUARTERS } from "../constants/planning";
 import "./Planning.css";
 
+const itemStatusLabel = (status) => ({
+  APPROVED: "Aprobada",
+  ACTIVE: "En curso",
+  CLOSED: "Cerrada"
+}[status] || status);
+
 function Trimestres() {
   const navigate = useNavigate();
   const [approvedAudits, setApprovedAudits] = useState([]);
 
   useEffect(() => {
     getPlanningAudits()
-      .then((items) => setApprovedAudits(items.filter((item) => item.status === "APPROVED" && item.approval === 100)))
+      .then((items) => setApprovedAudits(items.filter((item) => ["APPROVED", "ACTIVE", "CLOSED"].includes(item.status))))
       .catch(() => setApprovedAudits([]));
   }, []);
 
@@ -25,7 +31,7 @@ function Trimestres() {
             <div>
               <span className="eyebrow">CALENDARIO DEL PORTAFOLIO</span>
               <h1>Trimestres</h1>
-              <p>Auditorías aprobadas y asignadas al plan anual.</p>
+              <p>Auditorías aprobadas, en curso y cerradas del plan anual.</p>
             </div>
           </div>
 
@@ -33,7 +39,7 @@ function Trimestres() {
             {QUARTERS.map((quarter) => {
               const items = approvedAudits.filter((item) => item.quarter === quarter.value);
               const progress = items.length
-                ? Math.round(items.reduce((total, item) => total + (item.progress ?? item.approval ?? 0), 0) / items.length)
+                ? Math.round(items.reduce((total, item) => total + (item.progress ?? 0), 0) / items.length)
                 : 0;
               const closed = items.filter((item) => item.status === "CLOSED").length;
               return (
@@ -91,12 +97,12 @@ export function TrimestreDetalle() {
   }, []);
 
   const audits = allAudits
-    .filter((item) => item.status === "APPROVED" && item.approval === 100 && item.quarter === quarter.value)
+    .filter((item) => ["APPROVED", "ACTIVE", "CLOSED"].includes(item.status) && item.quarter === quarter.value)
     .filter((item) => {
       const matchesQuery = `${item.id} ${item.title} ${item.area} ${item.responsible}`
         .toLowerCase()
         .includes(query.toLowerCase());
-      return matchesQuery && (status === "Todos los estados" || status === "Aprobada");
+      return matchesQuery && (status === "Todos los estados" || status === itemStatusLabel(item.status));
     });
 
   return (
@@ -111,13 +117,13 @@ export function TrimestreDetalle() {
             <div>
               <div className="workspace-kicker"><CalendarRange size={18} /> PLANEACIÓN TRIMESTRAL</div>
               <h1>Espacio de Trabajo {quarter.label.replace("Trimestre ", "T")}</h1>
-              <p>Auditorías aprobadas y programadas durante {quarter.label}.</p>
+              <p>Estado y avance de ejecución durante {quarter.label}.</p>
             </div>
           </div>
 
           <div className="workspace-stats">
             <div><strong>{audits.length}</strong><span>Auditorías</span></div>
-            <div><strong>{audits.length ? "100%" : "0%"}</strong><span>Progreso del trimestre</span></div>
+            <div><strong>{audits.length ? `${Math.round(audits.reduce((total, item) => total + (item.progress ?? 0), 0) / audits.length)}%` : "0%"}</strong><span>Progreso de ejecución</span></div>
             <div><strong>{audits.length ? audits.filter((item) => item.status === "CLOSED").length : 0}</strong><span>Cerradas</span></div>
           </div>
 
@@ -130,6 +136,8 @@ export function TrimestreDetalle() {
               <select value={status} onChange={(event) => setStatus(event.target.value)} aria-label="Estado">
                 <option>Todos los estados</option>
                 <option>Aprobada</option>
+                <option>En curso</option>
+                <option>Cerrada</option>
               </select>
               <label className="search-input">
                 <Search size={17} />
@@ -143,15 +151,17 @@ export function TrimestreDetalle() {
               <span>ID</span><span>AUDITORÍA</span><span>UNIDAD / ÁREA</span><span>RESPONSABLE</span><span>ESTADO</span><span>AVANCE</span><span>ACCIÓN</span>
             </div>
             {audits.length === 0 ? (
-              <div className="workspace-empty"><Clock size={22} /> No hay auditorías aprobadas en este trimestre.</div>
+              <div className="workspace-empty"><Clock size={22} /> No hay auditorías programadas en este trimestre.</div>
             ) : audits.map((audit) => (
               <div className="audit-table-row" key={audit.id}>
                 <span className="planning-id">{audit.id}</span>
                 <strong>{audit.title}</strong>
                 <span>{audit.area}</span>
                 <span>{audit.responsible}</span>
-                <span className="status-pill"><CheckCircle2 size={14} /> Aprobada</span>
-                <span className="audit-progress"><i /><b>100%</b></span>
+                <span className={`status-pill status-${audit.status.toLowerCase()}`}>
+                  {audit.status === "ACTIVE" ? <Activity size={14} /> : <CheckCircle2 size={14} />}{itemStatusLabel(audit.status)}
+                </span>
+                <span className="audit-progress"><i /><b>{audit.progress ?? 0}%</b></span>
                 <button type="button" className="table-action">Abrir</button>
               </div>
             ))}

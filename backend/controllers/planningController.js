@@ -6,12 +6,14 @@ const { USER_STATUS } = require("../config/accountRules");
 
 const TYPES = ["Interna", "Externa"];
 const RISKS = ["Bajo", "Medio", "Alto"];
+const RISK_FACTOR_LEVELS = [1, 2, 3];
 const QUARTERS = ["Q1", "Q2", "Q3", "Q4"];
 const MIN_YEAR = 2020;
 const MAX_YEAR = 2100;
 
 const DUPLICATE_MESSAGE = "Ya existe una propuesta con el mismo título, área y año.";
-const isTerminal = (proposal) => proposal.status === "APPROVED" || proposal.status === "REJECTED";
+const isTerminal = (proposal) => ["APPROVED", "ACTIVE", "CLOSED", "REJECTED"].includes(proposal.status);
+const riskFromScore = (score) => score <= 2 ? "Bajo" : score <= 4 ? "Medio" : "Alto";
 
 const text = (value) => String(value ?? "").trim();
 const isDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value));
@@ -28,7 +30,10 @@ const parseProposal = (body) => {
   const objective = text(body.objective);
   const area = text(body.area);
   const type = text(body.type) || "Interna";
-  const risk = text(body.risk) || "Medio";
+  const requestedRisk = text(body.risk) || "Medio";
+  const fallbackFactor = requestedRisk === "Bajo" ? 1 : requestedRisk === "Alto" ? 3 : 2;
+  const likelihood = body.likelihood === undefined ? fallbackFactor : Number(body.likelihood);
+  const impact = body.impact === undefined ? fallbackFactor : Number(body.impact);
   const quarter = text(body.quarter);
   const year = Number(body.year) || new Date().getFullYear();
   const startDate = text(body.startDate);
@@ -38,7 +43,10 @@ const parseProposal = (body) => {
     return { error: "Completa el título, el área y el objetivo de la propuesta." };
   }
   if (!TYPES.includes(type)) return { error: "El tipo de auditoría no es válido." };
-  if (!RISKS.includes(risk)) return { error: "El nivel de riesgo no es válido." };
+  if (!RISKS.includes(requestedRisk)) return { error: "El nivel de riesgo no es válido." };
+  if (!RISK_FACTOR_LEVELS.includes(likelihood) || !RISK_FACTOR_LEVELS.includes(impact)) {
+    return { error: "La probabilidad y el impacto deben ser niveles del 1 al 3." };
+  }
   if (quarter && !QUARTERS.includes(quarter)) return { error: "El trimestre no es válido." };
   if (!Number.isInteger(year) || year < MIN_YEAR || year > MAX_YEAR) {
     return { error: "El año no es válido." };
@@ -61,13 +69,34 @@ const parseProposal = (body) => {
   }
 
   return {
-    data: { title, objective, area, type, risk, quarter, year, startDate, endDate, responsibleId, responsible }
+    data: {
+      title,
+      objective,
+      area,
+      type,
+      likelihood,
+      impact,
+      riskScore: likelihood * impact,
+      risk: riskFromScore(likelihood * impact),
+      quarter,
+      year,
+      startDate,
+      endDate,
+      responsibleId,
+      responsible
+    }
   };
 };
 
 // GET /api/planning
 const listProposals = (req, res) => {
   res.json({ proposals: planningRepository.getAll() });
+};
+
+// GET /api/planning/active
+const listActiveAudits = (req, res) => {
+  const audits = planningRepository.getAll().filter((item) => item.status === "ACTIVE");
+  res.json({ audits });
 };
 
 // GET /api/planning/auditors
@@ -151,6 +180,44 @@ const approveProposal = (req, res) => {
   res.json({ proposal });
 };
 
+// POST /api/planning/:id/start
+const startAudit = (req, res) => {
+  const current = planningRepository.findById(req.params.id);
+  if (!current) return res.status(404).json({ message: "Auditoría no encontrada." });
+  if (current.status !== "APPROVED") {
+    return res.status(409).json({ message: "Solo se pueden iniciar auditorías aprobadas y pendientes de ejecución." });
+  }
+
+  const audit = planningRepository.start(current.id, {
+    startedBy: { id: req.user.id, name: req.user.username }
+  });
+  logActivity({
+    actor: req.user,
+    action: "AUDIT_STARTED",
+    details: { auditId: audit.id, title: audit.title }
+  });
+  res.json({ audit });
+};
+
+// POST /api/planning/:id/close
+const closeAudit = (req, res) => {
+  const current = planningRepository.findById(req.params.id);
+  if (!current) return res.status(404).json({ message: "Auditoría no encontrada." });
+  if (current.status !== "ACTIVE") {
+    return res.status(409).json({ message: "Solo se pueden cerrar auditorías en curso." });
+  }
+
+  const audit = planningRepository.close(current.id, {
+    closedBy: { id: req.user.id, name: req.user.username }
+  });
+  logActivity({
+    actor: req.user,
+    action: "AUDIT_CLOSED",
+    details: { auditId: audit.id, title: audit.title }
+  });
+  res.json({ audit });
+};
+
 // POST /api/planning/:id/reject
 const rejectProposal = (req, res) => {
   const current = planningRepository.findById(req.params.id);
@@ -200,10 +267,13 @@ const deleteProposal = (req, res) => {
 module.exports = {
   parseProposal,
   listProposals,
+  listActiveAudits,
   listAuditors,
   createProposal,
   updateProposal,
   approveProposal,
+  startAudit,
+  closeAudit,
   rejectProposal,
   deleteProposal
 };

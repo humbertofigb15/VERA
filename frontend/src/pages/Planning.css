@@ -315,6 +315,80 @@
   line-height: 1.5;
 }
 
+.risk-matrix-panel {
+  background: #fff;
+  border-radius: 14px;
+  padding: 22px;
+  margin-bottom: 36px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .04), 0 6px 15px rgba(0, 0, 0, .03);
+}
+
+.risk-matrix-scroll {
+  overflow-x: auto;
+}
+
+.risk-matrix {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 8px;
+  text-align: center;
+}
+
+.risk-matrix caption {
+  text-align: left;
+  color: #748190;
+  font-size: 12px;
+  padding-bottom: 8px;
+}
+
+.risk-matrix th {
+  color: #52636d;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px;
+}
+
+.risk-matrix td.matrix-cell {
+  min-width: 100px;
+  height: 78px;
+  border-radius: 9px;
+}
+
+.matrix-cell strong,
+.matrix-cell span {
+  display: block;
+}
+
+.matrix-cell strong {
+  font-size: 22px;
+}
+
+.matrix-cell span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+.matrix-bajo { background: #e8f8f2; color: #08785f; }
+.matrix-medio { background: #fff4d6; color: #9a6600; }
+.matrix-alto { background: #ffe8e8; color: #b62e2e; }
+
+.risk-matrix-legend {
+  margin: 12px 0 0;
+  color: #748190;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.active-list-heading {
+  margin-top: 34px;
+}
+
+.active-audit-card .planning-card-actions {
+  min-width: 190px;
+}
+
 .planning-empty {
   color: #08785f;
   display: flex;
@@ -802,6 +876,10 @@
 
   .planning-card-actions {
     width: 100%;
+    margin-left: 64px;
+  }
+
+  .active-audit-card .planning-card-actions {
     margin-left: 64px;
   }
 
