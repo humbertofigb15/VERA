@@ -35,6 +35,7 @@ npm run audit --prefix frontend
 | Pruebas backend | Runner integrado `node:test`; prueba reglas de correo institucional, nombre, contraseña y estado de cuenta. | Cero pruebas fallidas. |
 | Integración backend | Arranca la aplicación Express en un puerto efímero y solicita `GET /`. | HTTP 200 y respuesta JSON de salud esperada. No necesita Supabase ni secretos. |
 | Cobertura | Node informa líneas, ramas y funciones instrumentadas al correr las pruebas. | Se reporta como señal; aún no hay umbral mínimo global. |
+| Navegadores, viewport y accesibilidad | `npm run test:e2e --prefix frontend` ejecuta flujos Playwright en Chromium, Firefox, emulación móvil/tablet, verifica desbordamiento horizontal en vistas clave y analiza login/panel con axe (WCAG 2.1 A/AA). | Todas las pruebas E2E pasan; la declaración está limitada a las rutas, viewports y reglas automatizadas incluidas. Revisión manual de teclado/lector sigue pendiente. |
 | ESLint frontend | Ejecuta la configuración ESLint existente sobre el frontend. | Cero errores de lint. |
 | Build frontend | Compila el bundle de producción con Vite. | El build termina correctamente. El runner registra el tamaño JavaScript principal cuando Vite lo informa. |
 | Auditoría npm | Audita dependencias directas y transitivas, de producción y desarrollo, en ambos lockfiles. | Cero vulnerabilidades altas o críticas (`npm audit --audit-level=high`). |
@@ -54,12 +55,14 @@ En GitHub Actions, el resumen Markdown aparece en la pestaña **Summary** del ru
 
 El workflow [`.github/workflows/quality.yml`](.github/workflows/quality.yml) corre en cada pull request hacia `main`, en cada push a `main` y bajo `workflow_dispatch`. Fija Ubuntu 24.04 y Node.js 22 para reducir deriva de entorno; usa instalaciones reproducibles con `npm ci`, límite máximo de 20 minutos, permisos `contents: read`, cancelación de ejecuciones obsoletas de la misma rama y acciones fijadas a SHA.
 
+El workflow [`.github/workflows/e2e.yml`](.github/workflows/e2e.yml) corre la interfaz en pull requests y actualizaciones de `main`. Comprueba Chromium, Firefox, Chrome y Edge, más perfiles emulados de móvil y tablet; guarda reporte HTML, screenshots, video y trazas de fallos como artifact por 14 días. En local se recomienda `npm run test:e2e --prefix frontend`; Playwright puede instalar sus navegadores con `npx playwright install chromium firefox` desde `frontend`.
+
 Un gate fallido hace fallar el job. El artifact permite revisar los tiempos y métricas de esa ejecución aunque el job falle. No se requieren secrets ni acceso de escritura al repositorio.
 
 ## Alcance y límites actuales
 
 - La suite backend incluye pruebas unitarias y de integración HTTP con `node:test`: reglas de cuenta y contraseñas, riesgo/probabilidad/impacto, validación de propuestas, métricas/matriz/permisos del dashboard, prioridades de notificación, secreto JWT, registro/login/2FA, administración de usuarios y roles, bitácora filtrada por administrador, salud de la API, propuestas/aprobación/rechazo, riesgos, controles, evidencias referenciadas, notificaciones derivadas e historial/comentarios de propuestas. La matriz de los 78 casos recibidos y el estado de cobertura por requisito están en [`docs/testing/test-plan.md`](docs/testing/test-plan.md).
-- Las pruebas de API existentes no equivalen a pruebas de extremo a extremo en navegador. Aún faltan matrices completas de autenticación/administración, navegadores y dispositivos, accesibilidad, carga/estrés y mediciones de disponibilidad.
+- La nueva suite E2E prueba login, errores visibles, registro, panel por rol, acciones permitidas, matriz, responsividad de rutas clave y axe en login/panel. No cubre todas las pantallas, navegadores móviles físicos, lectores de pantalla ni certifica conformidad WCAG; se requiere revisión manual. Los flujos de administración/auth y carga/estrés siguen incompletos.
 - Los datos del prototipo se mantienen en memoria. Evidencias son referencias y metadatos, no archivos binarios. Las pruebas de persistencia, retención, restauración y carga de archivos requieren capacidades/ambientes adicionales.
 - La cobertura se reporta como señal y no tiene umbral mínimo global. Primero se ampliará cobertura basada en comportamiento y se observará la línea base antes de proponer un umbral.
 - La auditoría npm detecta vulnerabilidades publicadas en dependencias; no es un análisis de seguridad del código fuente.

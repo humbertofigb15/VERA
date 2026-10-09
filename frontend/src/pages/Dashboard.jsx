@@ -101,7 +101,7 @@ function Dashboard() {
                     {summary.statusCounts.map(({ status, count }) => (
                       <div className="status-chart-row" role="listitem" key={status}>
                         <span>{STATUS_LABELS[status]}</span>
-                        <div className="status-chart-track" aria-label={`${count} ${STATUS_LABELS[status]}`}>
+                        <div className="status-chart-track" role="img" aria-label={`${count} ${STATUS_LABELS[status]}`}>
                           <span className={`status-chart-bar bar-${status.toLowerCase()}`} style={{ width: `${(count / maxStatusCount) * 100}%` }} />
                         </div>
                         <strong>{count}</strong>
