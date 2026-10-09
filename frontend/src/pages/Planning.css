@@ -261,6 +261,60 @@
   cursor: pointer;
 }
 
+.planning-card-actions button.reject-action {
+  background: #fff0f0;
+  color: #a52a2a;
+}
+
+.rejection-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.rejection-form textarea {
+  width: 100%;
+  min-height: 90px;
+  box-sizing: border-box;
+  border: 1px solid #dbe3e7;
+  border-radius: 7px;
+  padding: 9px;
+  color: #344451;
+  font: inherit;
+  resize: vertical;
+}
+
+.planning-card-actions button.cancel-reject-action {
+  border: 1px solid #dbe3e7;
+  background: #fff;
+  color: #49606d;
+  margin-top: 0;
+}
+
+.rejected-section-heading {
+  margin-top: 38px;
+}
+
+.rejected-card .planning-card-icon {
+  background: #fff0f0;
+  color: #a52a2a;
+}
+
+.rejected-badge {
+  border-radius: 999px;
+  background: #fff0f0;
+  color: #a52a2a;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.planning-card p.rejection-reason {
+  margin-top: 12px;
+  color: #52636d;
+  line-height: 1.5;
+}
+
 .planning-empty {
   color: #08785f;
   display: flex;

@@ -48,6 +48,14 @@ export const approveAuditProposal = async (id, quarter) => {
   return data.proposal;
 };
 
+export const rejectAuditProposal = async (id, reason) => {
+  const data = await request(`/${id}/reject`, {
+    method: "POST",
+    body: JSON.stringify({ reason })
+  });
+  return data.proposal;
+};
+
 export const deleteAuditProposal = async (id) => {
   await request(`/${id}`, { method: "DELETE" });
 };

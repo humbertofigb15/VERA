@@ -10,6 +10,7 @@ const {
   createProposal,
   updateProposal,
   approveProposal,
+  rejectProposal,
   deleteProposal
 } = require("../controllers/planningController");
 
@@ -21,5 +22,6 @@ router.post("/", verifyToken, allowRoles(...PLANNING_CREATE_ROLES), createPropos
 router.put("/:id", verifyToken, allowRoles(...PLANNING_CREATE_ROLES), updateProposal);
 router.delete("/:id", verifyToken, allowRoles(...PLANNING_CREATE_ROLES), deleteProposal);
 router.post("/:id/approve", verifyToken, allowRoles(...PLANNING_APPROVE_ROLES), approveProposal);
+router.post("/:id/reject", verifyToken, allowRoles(...PLANNING_APPROVE_ROLES), rejectProposal);
 
 module.exports = router;

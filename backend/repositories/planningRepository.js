@@ -18,7 +18,10 @@ const seed = (id, title, objective, area, risk) => ({
   createdAt: new Date().toISOString(),
   updatedAt: null,
   approvedBy: null,
-  approvedAt: null
+  approvedAt: null,
+  rejectedBy: null,
+  rejectedAt: null,
+  rejectionReason: null
 });
 
 const proposals = [
@@ -60,7 +63,10 @@ const create = (data) => {
     createdAt: new Date().toISOString(),
     updatedAt: null,
     approvedBy: null,
-    approvedAt: null
+    approvedAt: null,
+    rejectedBy: null,
+    rejectedAt: null,
+    rejectionReason: null
   };
   proposals.unshift(proposal);
   return { ...proposal };
@@ -86,6 +92,18 @@ const approve = (id, { quarter, approvedBy }) => {
   return { ...proposal };
 };
 
+const reject = (id, { rejectionReason, rejectedBy }) => {
+  const proposal = findById(id);
+  if (!proposal) return null;
+  Object.assign(proposal, {
+    status: "REJECTED",
+    rejectionReason,
+    rejectedBy,
+    rejectedAt: new Date().toISOString()
+  });
+  return { ...proposal };
+};
+
 const remove = (id) => {
   const index = proposals.findIndex((p) => p.id === id);
   if (index === -1) return null;
@@ -93,4 +111,4 @@ const remove = (id) => {
   return removed;
 };
 
-module.exports = { getAll, findById, findDuplicate, create, update, approve, remove };
+module.exports = { getAll, findById, findDuplicate, create, update, approve, reject, remove };

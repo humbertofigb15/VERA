@@ -14,6 +14,7 @@
 - Administración de usuarios y consulta de actividad de auditoría.
 - Creación, edición y aprobación de propuestas de planificación.
 - Reglas y pruebas de integración para el ciclo de propuestas de auditoría (HU-22).
+- Rechazo trazable de propuestas de auditoría con motivo obligatorio (HU-23).
 - Interfaz web para acceso, usuarios, auditoría, planificación y trimestres.
 
 ## Tecnologías
@@ -89,6 +90,10 @@ El flujo de GitHub Actions ejecuta las verificaciones de calidad en pull request
 El flujo permite crear propuestas con título, objetivo, área, tipo, nivel de riesgo y año; también admite responsable, trimestre y fechas. El backend valida campos obligatorios, catálogos permitidos, año, fechas, auditor responsable activo y duplicados por título, área y año. Las propuestas empiezan abiertas, se pueden editar mientras sigan abiertas y solo roles `SUPER_ADMIN` o `DIRECTOR` pueden aprobarlas. La aprobación requiere un trimestre válido y fija el avance en 100%; una propuesta aprobada queda protegida contra edición y eliminación.
 
 Las pruebas de integración de `backend/tests/planning.integration.test.js` verifican el flujo HTTP de creación, validación, duplicidad, edición, aprobación y permisos. Se ejecutan con `npm run test:coverage --prefix backend` y forman parte de `npm run quality`.
+
+### HU-23: revisión, aprobación o rechazo
+
+Los roles `SUPER_ADMIN` y `DIRECTOR` pueden resolver una propuesta abierta. El rechazo requiere un motivo no vacío, registra quién decidió y cuándo, guarda el motivo en la propuesta y genera el evento `AUDIT_PROPOSAL_REJECTED` con el mismo motivo. La pantalla separa propuestas rechazadas de las abiertas y muestra su motivo y responsable de decisión. Tanto las aprobadas como las rechazadas son estados terminales: no se pueden volver a editar, aprobar, rechazar ni eliminar. Las pruebas de integración comprueban permisos, motivo requerido, registro de decisión y rechazo de cambios posteriores.
 
 CodeQL analiza JavaScript y TypeScript en los pull requests, en `main` y semanalmente. `npm audit` revisa dependencias de backend y frontend en el flujo de calidad. Dependabot revisa semanalmente dependencias npm y GitHub Actions.
 

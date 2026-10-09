@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, ClipboardList, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Check, ClipboardList, Pencil, Plus, Trash2, X, XCircle } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import {
   approveAuditProposal,
@@ -7,6 +7,7 @@ import {
   deleteAuditProposal,
   getAuditors,
   getPlanningAudits,
+  rejectAuditProposal,
   updateAuditProposal
 } from "../services/planningService";
 import {
@@ -43,6 +44,8 @@ function Planificacion() {
   const [auditors, setAuditors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [quarters, setQuarters] = useState({});
+  const [rejectingId, setRejectingId] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState("");
   const [form, setForm] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -72,8 +75,9 @@ function Planificacion() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const openProposals = items.filter((item) => item.status !== "APPROVED");
+  const openProposals = items.filter((item) => item.status === "OPEN");
   const approvedProposals = items.filter((item) => item.status === "APPROVED");
+  const rejectedProposals = items.filter((item) => item.status === "REJECTED");
 
   const updateForm = (field, value) => setForm({ ...form, [field]: value });
 
@@ -136,6 +140,24 @@ function Planificacion() {
       "La propuesta alcanzó el 100% y ahora aparece en Trimestres."
     );
 
+  const startReject = (item) => {
+    setRejectingId(item.id);
+    setRejectionReason("");
+    setError("");
+  };
+
+  const handleReject = async (event, item) => {
+    event.preventDefault();
+    const ok = await run(
+      () => rejectAuditProposal(item.id, rejectionReason.trim()),
+      "La propuesta fue rechazada y el motivo quedó en la bitácora."
+    );
+    if (ok) {
+      setRejectingId(null);
+      setRejectionReason("");
+    }
+  };
+
   const handleDelete = (item) => {
     if (!window.confirm(`¿Eliminar la propuesta ${item.id}? Esta acción no se puede deshacer.`)) return;
     run(() => deleteAuditProposal(item.id), "La propuesta fue eliminada.");
@@ -166,7 +188,7 @@ function Planificacion() {
           <div className="planning-summary">
             <div><strong>{openProposals.length}</strong><span>Propuestas abiertas</span></div>
             <div><strong>{approvedProposals.length}</strong><span>Auditorías aprobadas</span></div>
-            <div><strong>{items.length}</strong><span>Total del tablero</span></div>
+            <div><strong>{rejectedProposals.length}</strong><span>Propuestas rechazadas</span></div>
           </div>
 
           <div className="planning-section-heading">
@@ -229,6 +251,26 @@ function Planificacion() {
                           <Check size={17} aria-hidden="true" />
                           Marcar 100% aprobada
                         </button>
+                        {rejectingId === item.id ? (
+                          <form className="rejection-form" onSubmit={(event) => handleReject(event, item)}>
+                            <label htmlFor={`reason-${item.id}`}>Motivo del rechazo</label>
+                            <textarea
+                              id={`reason-${item.id}`}
+                              required
+                              maxLength={1000}
+                              value={rejectionReason}
+                              onChange={(event) => setRejectionReason(event.target.value)}
+                              placeholder="Explica qué debe corregirse o por qué no procede."
+                            />
+                            <button type="submit" className="reject-action">Confirmar rechazo</button>
+                            <button type="button" className="cancel-reject-action" onClick={() => setRejectingId(null)}>Cancelar</button>
+                          </form>
+                        ) : (
+                          <button type="button" className="reject-action" onClick={() => startReject(item)}>
+                            <XCircle size={16} aria-hidden="true" />
+                            Rechazar propuesta
+                          </button>
+                        )}
                       </>
                     )}
                     {canCreate && (
@@ -243,6 +285,39 @@ function Planificacion() {
                         </button>
                       </>
                     )}
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          <div className="planning-section-heading rejected-section-heading">
+            <div>
+              <span className="eyebrow">DECISIONES REGISTRADAS</span>
+              <h2>Propuestas rechazadas</h2>
+            </div>
+            <span>{rejectedProposals.length} rechazadas</span>
+          </div>
+          {rejectedProposals.length === 0 ? (
+            <div className="planning-empty">Todavía no hay propuestas rechazadas.</div>
+          ) : (
+            <div className="planning-list">
+              {rejectedProposals.map((item) => (
+                <article className="planning-card rejected-card" key={item.id}>
+                  <div className="planning-card-icon"><XCircle size={22} aria-hidden="true" /></div>
+                  <div className="planning-card-content">
+                    <div className="proposal-heading">
+                      <span className="planning-id">{item.id}</span>
+                      <span className="rejected-badge">Rechazada</span>
+                    </div>
+                    <h2>{item.title}</h2>
+                    <p>{item.objective}</p>
+                    <div className="proposal-meta">
+                      <span><b>Área:</b> {item.area}</span>
+                      <span><b>Decidió:</b> {item.rejectedBy?.name || "Sin dato"}</span>
+                      {item.rejectedAt && <span><b>Fecha:</b> {formatDate(item.rejectedAt.slice(0, 10))}</span>}
+                    </div>
+                    <p className="rejection-reason"><b>Motivo:</b> {item.rejectionReason}</p>
                   </div>
                 </article>
               ))}

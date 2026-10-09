@@ -22,6 +22,7 @@ const ACTION_LABELS = {
   AUDIT_PROPOSAL_CREATED: "Propuesta de auditoría creada",
   AUDIT_PROPOSAL_UPDATED: "Propuesta de auditoría editada",
   AUDIT_PROPOSAL_APPROVED: "Propuesta de auditoría aprobada",
+  AUDIT_PROPOSAL_REJECTED: "Propuesta de auditoría rechazada",
   AUDIT_PROPOSAL_DELETED: "Propuesta de auditoría eliminada"
 };
 
@@ -31,7 +32,8 @@ const WARNING_ACTIONS = [
   "TWO_FACTOR_FAILED",
   "USER_DISABLED",
   "REQUEST_REJECTED",
-  "AUDIT_PROPOSAL_DELETED"
+  "AUDIT_PROPOSAL_DELETED",
+  "AUDIT_PROPOSAL_REJECTED"
 ];
 
 const formatDateTime = (iso) =>
@@ -65,6 +67,8 @@ const describe = ({ action, target, details }) => {
       return `${details.proposalId} · ${details.title}`;
     case "AUDIT_PROPOSAL_APPROVED":
       return `${details.proposalId} · ${details.title} (${details.quarter})`;
+    case "AUDIT_PROPOSAL_REJECTED":
+      return `${details.proposalId} · ${details.title} · Motivo: ${details.reason}`;
     case "LOGIN_SUCCESS":
       return details.method === "PASSWORD_2FA" ? "Contraseña + 2FA" : "Contraseña";
     default:
