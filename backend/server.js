@@ -12,6 +12,7 @@ const auditRoutes = require("./routes/auditRoutes");
 const planningRoutes = require("./routes/planningRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const riskRoutes = require("./routes/riskRoutes");
+const controlRoutes = require("./routes/controlRoutes");
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use("/api/audit", auditRoutes);
 app.use("/api/planning", planningRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/risks", riskRoutes);
+app.use("/api/controls", controlRoutes);
 
 app.get("/", (req, res) => {
   res.json({

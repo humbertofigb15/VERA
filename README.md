@@ -113,6 +113,12 @@ Cada reevaluación conserva versión, factores, puntaje, nivel, justificación, 
 
 El alcance actual no incluye cierre del riesgo, adjuntos/evidencia ni almacenamiento persistente: el registro usa el mismo almacenamiento en memoria que el prototipo, por lo que los datos se reinician al reiniciar el backend. Las pruebas de integración cubren autenticación, permisos, validación de escalas y justificación, cálculo de categoría, duplicados, filtros, alcance del auditor y conservación de versiones.
 
+### HU-15: controles y cobertura de riesgos
+
+`/controles` registra controles preventivos, detectivos o correctivos, su responsable, frecuencia y los riesgos que atienden. El mapa muestra la relación riesgo-control y el nivel de efectividad (1–5), además del porcentaje de riesgos visibles que tienen al menos un control vinculado. Las evaluaciones conservan versiones, justificación, autor y fecha. El nivel es un dato descriptivo y no se usa para modificar automáticamente la clasificación del riesgo. La API `GET/POST /api/controls`, `PUT /api/controls/:id` y `POST /api/controls/:id/evaluate` exige sesión; `SUPER_ADMIN`, `DIRECTOR` y `GERENTE` administran el catálogo. Auditoría solo ve controles relacionados con riesgos asignados a su usuario.
+
+El modelo de controles y evaluaciones se conserva en memoria, igual que los riesgos del prototipo; el repositorio puede reemplazarse posteriormente por almacenamiento duradero sin cambiar la interfaz HTTP.
+
 ### HU-18: historial, actividad y comentarios por auditoría
 
 Desde Planificación, Auditorías activas/aprobadas y el detalle trimestral se puede abrir el historial contextual de cada propuesta. La API `GET /api/planning/:id/history` combina eventos existentes de creación, edición, aprobación, rechazo, inicio y cierre con los comentarios del expediente. El identificador del expediente filtra los eventos relacionados; las vistas de Auditoría mantienen el alcance asignado, y las cuentas sin sesión no pueden consultar el recurso.
