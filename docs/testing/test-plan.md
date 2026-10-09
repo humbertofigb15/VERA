@@ -61,12 +61,12 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 
 | Caso | Requisito / escenario | Tipo principal | Prioridad | PR | Línea base |
 |---|---|---|---|---:|---|
-| TC-01 | RF-01: correo institucional duplicado | Unit/API | Alta | 2 | Pendiente |
-| TC-02 | RF-01: cuenta eliminada o bloqueada | API | Alta | 2 | Pendiente |
-| TC-03 | RF-03: acceso correcto | API/E2E | Alta | 2 | Pendiente |
-| TC-04 | RF-03: credenciales inexistentes | API | Alta | 2 | Pendiente |
-| TC-05 | RF-03: cuenta deshabilitada | API | Alta | 2 | Pendiente |
-| TC-06 | RF-04: cinco intentos fallidos y bloqueo | Unit/API | Alta | 2 | Pendiente |
+| TC-01 | RF-01: correo institucional duplicado | Unit/API | Alta | 2 | Cubierto por API: duplicado activo y dirección asociada a cuenta deshabilitada devuelve conflicto |
+| TC-02 | RF-01: cuenta eliminada o bloqueada | API | Alta | 2 | Parcial: no permite reutilizar correo de una cuenta deshabilitada; política de re-registro tras rechazo por confirmar |
+| TC-03 | RF-03: acceso correcto | API/E2E | Alta | 2 | Cubierto por API: token firmado, identidad/rol y sesión protegida; registro externo sustituido por test double |
+| TC-04 | RF-03: credenciales inexistentes | API | Alta | 2 | Cubierto por API: respuesta 401 |
+| TC-05 | RF-03: cuenta deshabilitada | API | Alta | 2 | Cubierto por API: respuesta 403 |
+| TC-06 | RF-04: cinco intentos fallidos y bloqueo | Unit/API | Alta | 2 | Cubierto por API: quinto fallo bloquea, emite Retry-After y el bloqueo continúa |
 | TC-07 | RF-09: actividad reciente tras crear auditoría | API/UI | Media | 5 | Parcial: hay eventos de dominio; falta verificar la sección reciente del panel |
 | TC-08 | RF-10: navegación del menú | E2E | Media | 6 | Pendiente |
 | TC-09 | RF-11: cerrar sesión y proteger rutas | API/E2E | Alta | 2 | Pendiente |
@@ -89,17 +89,17 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 | TC-26 | RF-29: exportación completa | API/E2E | Media | 5 | Bloqueado: no se encontró función de reportes/exportación en la línea base |
 | TC-27 | RF-29: exportar datos filtrados | API/E2E | Media | 5 | Bloqueado: falta función de exportación |
 | TC-28 | RF-29: exportar filtro vacío | API/UI | Media | 5 | Bloqueado: falta función de exportación |
-| TC-29 | RF-30/RNF-03: funciones distintas por rol | Unit/API/E2E | Alta | 2 | Parcial: varios endpoints prueban autorización; falta matriz completa de roles |
+| TC-29 | RF-30/RNF-03: funciones distintas por rol | Unit/API/E2E | Alta | 2 | Parcial: listado/edición y denegación por rol cubiertos en API; falta matriz completa de módulos |
 | TC-30 | RF-33: cerrar auditoría y evitar edición posterior | API/UI | Alta | 3 | Parcial: transición de auditoría activa a cerrada probada por API |
 | TC-31 | RNF-01: 150 usuarios concurrentes | Carga | Alta | 7 | Pendiente: no existe prueba de carga |
 | TC-32 | RNF-01: 250 o más usuarios y umbral de respuesta | Carga | Alta | 7 | Pendiente: no existe prueba de carga ni ambiente representativo |
 | TC-33 | RNF-06: navegadores compatibles | E2E | Media | 6 | Pendiente |
 | TC-34 | RNF-06: navegador no compatible | E2E/manual | Media | 6 | Pendiente; acordar comportamiento soportado y mensaje esperado |
 | TC-35 | RNF-07: escritorio, tablet, orientación | UI/manual | Media | 6 | Pendiente |
-| TC-36 | RNF-17: contraseña segura aceptada | Unit/API | Alta | 2 | Parcial: hay reglas unitarias de contraseña |
+| TC-36 | RNF-17: contraseña segura aceptada | Unit/API | Alta | 2 | Cubierto por unitarias de reglas y API de registro |
 | TC-37 | RNF-07: diseño responsivo en dispositivos | UI/manual | Media | 6 | Pendiente |
-| TC-38 | RNF-17: política mínima de longitud, mayúsculas, minúsculas y números | Unit/API | Alta | 2 | Parcial: verificar que la regla existente coincida con todos los criterios del requisito |
-| TC-39 | RF-02: administrador edita rol y deshabilita usuario | API/E2E | Alta | 2 | Pendiente |
+| TC-38 | RNF-17: política mínima de longitud, mayúsculas, minúsculas y números | Unit/API | Alta | 2 | Cubierto por unitarias: frontera de ocho caracteres y cada categoría requerida |
+| TC-39 | RF-02: administrador edita rol y deshabilita usuario | API/E2E | Alta | 2 | Cubierto por API: cambio de rol/estado, actor sin permiso y sesión anterior invalidada/reactivada |
 | TC-40 | RF-05: panel con gráficas, métricas y acciones | API/E2E | Media | 5 | Parcial: datos y permisos del dashboard tienen prueba API; falta render/UI |
 | TC-41 | RF-06: total por trimestre seleccionado | Unit/API/E2E | Media | 5 | Parcial: datos de portafolio se prueban; selector y conteo de trimestre requieren cobertura explícita |
 | TC-42 | RF-07: auditorías activas pendientes | API/UI | Alta | 3 | Parcial: endpoint de auditorías activas probado; falta UI y casos de filtrado/orden |
@@ -118,7 +118,7 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 | TC-55 | RF-32: aprobar propuesta | API/E2E | Alta | 3 | Existente: aprobación, permisos y transición probados por API |
 | TC-56 | RF-32: rechazar propuesta con motivo | API/E2E | Alta | 3 | Existente: motivo obligatorio, actor/fecha y estado terminal probados por API |
 | TC-57 | RNF-02: TLS 1.2 o superior en tránsito | Operativa | Alta | 7 | Bloqueado: requiere URL/ambiente desplegado y configuración TLS verificable |
-| TC-58 | RNF-03: acceso directo a módulo sin permiso | API/E2E | Alta | 2 | Parcial: endpoints con roles cubiertos; falta matriz de rutas y pruebas UI/direct URL |
+| TC-58 | RNF-03: acceso directo a módulo sin permiso | API/E2E | Alta | 2 | Parcial: endpoints con roles cubiertos; falta matriz completa de rutas y pruebas UI/direct URL |
 | TC-59 | RNF-04: registrar login y cambio con usuario/fecha/hora | API/operativa | Alta | 4 | Parcial: eventos se emiten en operaciones cubiertas; falta prueba contractual de login/cambio y persistencia |
 | TC-60 | RNF-05: crear auditoría en menos de 10 minutos sin capacitación | Usabilidad/manual | Media | 6 | Pendiente: requiere protocolo y participantes de prueba |
 | TC-61 | RNF-08: disponibilidad mensual de 99.5% | Operativa/monitoreo | Media | 7 | Bloqueado: requiere monitoreo continuo durante un mes |
@@ -129,7 +129,7 @@ La disponibilidad de 99.5% requiere una ventana de medición mensual; RTO de 4 h
 | TC-66 | RNF-13: conservar historial/evidencia según retención | Operativa/API | Alta | 4 | Bloqueado: almacenamiento actual en memoria, sin política de retención |
 | TC-67 | RNF-14: panel carga en máximo 2 segundos | Rendimiento/E2E | Media | 7 | Pendiente: no hay medición base; definir navegador, red y estadístico |
 | TC-68 | RNF-15: reporte de hasta 100 páginas en máximo 10 segundos | Rendimiento | Media | 7 | Bloqueado: reportes no implementados |
-| TC-69 | RNF-16: activar y usar 2FA | API/E2E | Alta | 2 | Pendiente: hay dependencia TOTP; falta prueba del flujo y estado de 2FA |
+| TC-69 | RNF-16: activar y usar 2FA | API/E2E | Alta | 2 | Cubierto por API: enrolamiento TOTP, código erróneo/expirado y sesión solo tras código válido |
 | TC-70 | RNF-18: WCAG 2.1 AA | A11y/UI/manual | Media | 6 | Pendiente: combinar axe/Lighthouse con teclado y revisión manual |
 | TC-71 | RNF-19: interfaz completamente en español | UI/manual | Media | 6 | Pendiente: inventario y verificación de textos visibles |
 | TC-72 | RNF-20: mensajes claros sin trazas técnicas | API/E2E | Media | 6 | Parcial: APIs validan errores; falta revisar mensajes visibles y ausencia de detalles internos |

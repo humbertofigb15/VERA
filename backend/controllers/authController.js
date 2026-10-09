@@ -62,9 +62,11 @@ const registerFailure = (ip) => {
 
 const failureResponse = (res, rec, wrongMessage) => {
   if (rec.lockUntil) {
+    const secondsLeft = Math.ceil((rec.lockUntil - Date.now()) / 1000);
+    res.set("Retry-After", String(secondsLeft));
     return res.status(429).json({
       message: "Demasiados intentos fallidos. Tu acceso está bloqueado por 5 minutos.",
-      retryAfter: LOCK_TIME_MS / 1000
+      retryAfter: secondsLeft
     });
   }
   return res.status(401).json({ message: wrongMessage });
