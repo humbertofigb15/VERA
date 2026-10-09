@@ -58,7 +58,7 @@ Un gate fallido hace fallar el job. El artifact permite revisar los tiempos y m�
 
 ## Alcance y límites actuales
 
-- La suite backend incluye pruebas unitarias y de integración HTTP con `node:test`: reglas de cuenta, secreto JWT, salud de la API, dashboard por rol, propuestas/aprobación/rechazo, riesgos, controles, evidencias referenciadas, notificaciones derivadas e historial/comentarios de propuestas. La matriz de los 78 casos recibidos y el estado de cobertura por requisito están en [`docs/testing/test-plan.md`](docs/testing/test-plan.md).
+- La suite backend incluye pruebas unitarias y de integración HTTP con `node:test`: reglas de cuenta, secreto JWT, registro/login/2FA, administración de usuarios y roles, salud de la API, dashboard por rol, propuestas/aprobación/rechazo, riesgos, controles, evidencias referenciadas, notificaciones derivadas e historial/comentarios de propuestas. La matriz de los 78 casos recibidos y el estado de cobertura por requisito están en [`docs/testing/test-plan.md`](docs/testing/test-plan.md).
 - Las pruebas de API existentes no equivalen a pruebas de extremo a extremo en navegador. Aún faltan matrices completas de autenticación/administración, navegadores y dispositivos, accesibilidad, carga/estrés y mediciones de disponibilidad.
 - Los datos del prototipo se mantienen en memoria. Evidencias son referencias y metadatos, no archivos binarios. Las pruebas de persistencia, retención, restauración y carga de archivos requieren capacidades/ambientes adicionales.
 - La cobertura se reporta como señal y no tiene umbral mínimo global. Primero se ampliará cobertura basada en comportamiento y se observará la línea base antes de proponer un umbral.

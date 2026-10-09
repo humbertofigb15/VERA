@@ -26,6 +26,8 @@ test("name validation accepts human names and rejects invalid values", () => {
 
 test("password validation requires uppercase, lowercase, and digits", () => {
   assert.equal(isValidPassword("Vera1234"), true);
+  assert.equal(isValidPassword("Vera123"), false);
+  assert.equal(isValidPassword("Aa123456"), true);
   assert.equal(isValidPassword("vera1234"), false);
   assert.equal(isValidPassword("VERA1234"), false);
   assert.equal(isValidPassword("VeraPass"), false);
