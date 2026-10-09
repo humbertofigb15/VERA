@@ -119,6 +119,12 @@ El alcance actual no incluye cierre del riesgo, adjuntos/evidencia ni almacenami
 
 El modelo de controles y evaluaciones se conserva en memoria, igual que los riesgos del prototipo; el repositorio puede reemplazarse posteriormente por almacenamiento duradero sin cambiar la interfaz HTTP.
 
+### HU-17: bandeja de notificaciones y actividades pendientes
+
+`/notificaciones` presenta una bandeja interna con propuestas abiertas para decisión, propuestas creadas que esperan revisión, auditorías aprobadas listas para iniciar y auditorías activas asignadas. Los elementos se derivan al consultar `GET /api/notifications`, se filtran según el rol y la asignación y se ordenan por prioridad. Los botones llevan a las pantallas existentes para completar la acción.
+
+Es una bandeja dentro de la aplicación: no envía correo ni push, no crea notificaciones duplicadas y no persiste estados de lectura. El conteo representa la situación actual del portafolio, por lo que cambia cuando cambian los estados de las propuestas. La interfaz y el servicio quedan separados para que el equipo pueda agregar después persistencia, preferencias y canales de entrega.
+
 ### HU-18: historial, actividad y comentarios por auditoría
 
 Desde Planificación, Auditorías activas/aprobadas y el detalle trimestral se puede abrir el historial contextual de cada propuesta. La API `GET /api/planning/:id/history` combina eventos existentes de creación, edición, aprobación, rechazo, inicio y cierre con los comentarios del expediente. El identificador del expediente filtra los eventos relacionados; las vistas de Auditoría mantienen el alcance asignado, y las cuentas sin sesión no pueden consultar el recurso.
