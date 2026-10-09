@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/api/planning";
+const API_URL = "/api/planning";
 
 const request = async (path, options = {}) => {
   const token = localStorage.getItem("token");

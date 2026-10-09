@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/api/auth";
+const API_URL = "/api/auth";
 
 export const verify2FA = async (tempToken, code) => {
   const response = await fetch(`${API_URL}/verify-2fa`, {

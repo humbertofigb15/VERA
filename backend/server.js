@@ -27,8 +27,12 @@ app.get("/", (req, res) => {
   });
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`VERA backend ejecutándose en http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`VERA backend ejecutándose en http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
