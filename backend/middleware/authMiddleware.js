@@ -1,9 +1,7 @@
 const jwt = require("jsonwebtoken");
 const userRepository = require("../repositories/userRepository");
 const { USER_STATUS } = require("../config/accountRules");
-
-
-const SECRET_KEY = "vera-secret-key";
+const { getJwtSecret } = require("../config/jwtSecret");
 
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -17,7 +15,7 @@ const verifyToken = (req, res, next) => {
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, SECRET_KEY);
+    const decoded = jwt.verify(token, getJwtSecret());
     if (decoded.purpose) {
       return res.status(401).json({ message: "Token inválido" });
     }

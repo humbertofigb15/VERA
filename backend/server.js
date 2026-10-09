@@ -4,6 +4,7 @@ const path = require("node:path");
 
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
+const { getJwtSecret } = require("./config/jwtSecret");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const auditRoutes = require("./routes/auditRoutes");
@@ -30,6 +31,7 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 if (require.main === module) {
+  getJwtSecret();
   app.listen(PORT, () => {
     console.log(`VERA backend ejecutándose en http://localhost:${PORT}`);
   });
