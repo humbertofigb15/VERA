@@ -1,0 +1,112 @@
+import { useEffect, useState } from "react";
+import { Activity, ClipboardCheck, Pencil, Plus, ShieldAlert, X } from "lucide-react";
+import Sidebar from "../components/Sidebar";
+import { PLANNING_CREATE_ROLES } from "../constants/planning";
+import { createRisk, evaluateRisk, getRiskOwners, getRisks, updateRisk } from "../services/riskService";
+import { getPlanningAudits } from "../services/planningService";
+import "./Riesgos.css";
+
+const EMPTY = { title: "", description: "", area: "", ownerId: "", responsePlan: "", linkedAuditId: "", likelihood: 2, impact: 2, note: "" };
+const levelFor = (score) => score <= 2 ? "Bajo" : score <= 4 ? "Medio" : "Alto";
+const dateLabel = (value) => new Date(value).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" });
+
+function Riesgos() {
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const canManage = PLANNING_CREATE_ROLES.includes(user?.role);
+  const [risks, setRisks] = useState([]);
+  const [owners, setOwners] = useState([]);
+  const [audits, setAudits] = useState([]);
+  const [filters, setFilters] = useState({ level: "", search: "" });
+  const [form, setForm] = useState(EMPTY);
+  const [editing, setEditing] = useState(null);
+  const [assessing, setAssessing] = useState(null);
+  const [modal, setModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+
+  const refresh = async () => setRisks(await getRisks(filters));
+  useEffect(() => {
+    Promise.all([getRisks(filters), canManage ? getRiskOwners() : Promise.resolve([]), canManage ? getPlanningAudits() : Promise.resolve([])])
+      .then(([allRisks, activeOwners, allAudits]) => { setRisks(allRisks); setOwners(activeOwners); setAudits(allAudits); })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [filters, canManage]);
+
+  const summary = ["Alto", "Medio", "Bajo"].map((level) => ({ level, count: risks.filter((risk) => risk.level === level).length }));
+  const startCreate = () => { setEditing(null); setForm(EMPTY); setError(""); setModal(true); };
+  const startEdit = (risk) => {
+    setEditing(risk);
+    setForm({ title: risk.title, description: risk.description, area: risk.area, ownerId: String(risk.ownerId), responsePlan: risk.responsePlan || "", linkedAuditId: risk.linkedAuditId || "" });
+    setError(""); setModal(true);
+  };
+  const submit = async (event) => {
+    event.preventDefault(); setSaving(true); setError("");
+    try {
+      if (assessing) await evaluateRisk(assessing.id, form);
+      else if (editing) await updateRisk(editing.id, form);
+      else await createRisk(form);
+      await refresh(); setModal(false); setAssessing(null); setMessage(assessing ? "Evaluación registrada en el historial." : editing ? "Riesgo actualizado." : "Riesgo registrado.");
+    } catch (err) { setError(err.message); }
+    finally { setSaving(false); }
+  };
+  const startAssessment = (risk) => { setAssessing(risk); setEditing(null); setForm({ likelihood: risk.likelihood, impact: risk.impact, note: "" }); setError(""); setModal(true); };
+  const closeModal = () => { setModal(false); setAssessing(null); setEditing(null); setError(""); };
+
+  return <div className="dashboard-layout">
+    <Sidebar active="riesgos" />
+    <main className="dashboard-main">
+      <section className="dashboard-content risk-register-page">
+        <header className="dashboard-header">
+          <div><span className="eyebrow">GESTIÓN Y PRIORIZACIÓN</span><h1>Registro de riesgos</h1><p>Identifica, evalúa y da seguimiento a los riesgos del portafolio.</p></div>
+          {canManage && <button className="primary-action" onClick={startCreate}><Plus size={18} /> Registrar riesgo</button>}
+        </header>
+        {message && <p className="risk-feedback success">{message}</p>}
+        {error && !modal && <p className="risk-feedback error">{error}</p>}
+        <div className="risk-summary">
+          {summary.map(({ level, count }) => <article key={level} className={`risk-summary-card risk-summary-${level.toLowerCase()}`}><span>Riesgo {level.toLowerCase()}</span><strong>{count}</strong><small>registros visibles</small></article>)}
+        </div>
+        <section className="risk-filters" aria-label="Filtros de riesgos">
+          <label>Buscar<input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Nombre, área, responsable..." /></label>
+          <label>Nivel<select value={filters.level} onChange={(event) => setFilters({ ...filters, level: event.target.value })}><option value="">Todos los niveles</option><option>Bajo</option><option>Medio</option><option>Alto</option></select></label>
+        </section>
+        {loading ? <div className="risk-empty">Cargando registro...</div> : risks.length === 0 ? <div className="risk-empty">No hay riesgos que coincidan con estos filtros.</div> :
+          <div className="risk-list">{risks.map((risk) => <article className="risk-record" key={risk.id}>
+            <div className="risk-record-icon"><ShieldAlert size={22} /></div>
+            <div className="risk-record-main">
+              <div className="risk-record-heading"><span className="risk-record-id">{risk.id}</span><span className={`risk-badge risk-${risk.level.toLowerCase()}`}>{risk.level}</span><span className="risk-score">P×I {risk.score} / 9</span></div>
+              <h2>{risk.title}</h2><p>{risk.description}</p>
+              <div className="risk-record-meta"><span><b>Área:</b> {risk.area}</span><span><b>Responsable:</b> {risk.ownerName}</span><span><b>Estado:</b> Abierto</span><span><b>Evaluaciones:</b> {risk.evaluations.length}</span>{risk.linkedAuditId && <span><b>Auditoría vinculada:</b> {risk.linkedAuditId}</span>}</div>
+              {risk.responsePlan && <p className="risk-plan"><b>Plan de respuesta:</b> {risk.responsePlan}</p>}
+              <details className="risk-history"><summary><Activity size={15} /> Historial de evaluación ({risk.evaluations.length})</summary><ol>{[...risk.evaluations].reverse().map((evaluation) => <li key={evaluation.version}><div><b>Versión {evaluation.version}</b><span className={`risk-badge risk-${evaluation.level.toLowerCase()}`}>{evaluation.level} · {evaluation.score}/9</span></div><p>{evaluation.note}</p><small>{evaluation.assessedBy?.name || "Usuario"} · {dateLabel(evaluation.assessedAt)} · Probabilidad {evaluation.likelihood}, impacto {evaluation.impact}</small></li>)}</ol></details>
+            </div>
+            {canManage && <div className="risk-record-actions"><button onClick={() => startEdit(risk)}><Pencil size={15} /> Editar</button><button onClick={() => startAssessment(risk)}><ClipboardCheck size={15} /> Reevaluar</button></div>}
+          </article>)}</div>}
+      </section>
+    </main>
+    {modal && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeModal(); }}><form className="proposal-modal risk-modal" onSubmit={submit}>
+      <div className="modal-header"><div><span className="eyebrow">{assessing ? `EVALUACIÓN ${assessing.id}` : editing ? `EDITAR ${editing.id}` : "NUEVO REGISTRO"}</span><h2>{assessing ? "Reevaluar riesgo" : editing ? "Editar riesgo" : "Registrar riesgo"}</h2><p>{assessing ? "Cada evaluación conserva sus valores, motivo, autor y fecha." : "Documenta el riesgo, su responsable y la primera evaluación."}</p></div><button type="button" className="modal-close" onClick={closeModal} aria-label="Cerrar"><X size={20} /></button></div>
+      {error && <p className="risk-feedback error">{error}</p>}
+      <div className="proposal-form-grid">
+        {!assessing && <>
+          <label className="full-width">Nombre del riesgo<input required minLength="3" maxLength="140" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} /></label>
+          <label className="full-width">Descripción<textarea required minLength="10" maxLength="2000" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} /></label>
+          <label>Área<input required maxLength="100" value={form.area} onChange={(event) => setForm({ ...form, area: event.target.value })} /></label>
+          <label>Responsable<select required value={form.ownerId} onChange={(event) => setForm({ ...form, ownerId: event.target.value })}><option value="">Seleccionar cuenta activa</option>{owners.map((owner) => <option key={owner.id} value={owner.id}>{owner.name} · {owner.role}</option>)}</select></label>
+          <label className="full-width">Plan de respuesta (opcional)<textarea maxLength="2000" value={form.responsePlan} onChange={(event) => setForm({ ...form, responsePlan: event.target.value })} placeholder="Acciones para reducir probabilidad o impacto" /></label>
+          <label className="full-width">Auditoría relacionada (opcional)<select value={form.linkedAuditId} onChange={(event) => setForm({ ...form, linkedAuditId: event.target.value })}><option value="">Sin auditoría relacionada</option>{audits.map((audit) => <option key={audit.id} value={audit.id}>{audit.id} · {audit.title}</option>)}</select></label>
+        </>}
+        {!editing && <>
+          <label>Probabilidad<select value={form.likelihood} onChange={(event) => setForm({ ...form, likelihood: Number(event.target.value) })}><option value={1}>Baja (1)</option><option value={2}>Media (2)</option><option value={3}>Alta (3)</option></select></label>
+          <label>Impacto<select value={form.impact} onChange={(event) => setForm({ ...form, impact: Number(event.target.value) })}><option value={1}>Bajo (1)</option><option value={2}>Medio (2)</option><option value={3}>Alto (3)</option></select></label>
+          <p className="risk-score-preview full-width">Resultado: <b>{Number(form.likelihood) * Number(form.impact)} / 9 · {levelFor(Number(form.likelihood) * Number(form.impact))}</b></p>
+          <label className="full-width">Justificación de la evaluación<textarea required minLength="10" maxLength="1000" value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} placeholder="Explica la evidencia que sustenta esta calificación." /></label>
+        </>}
+      </div>
+      <div className="modal-actions"><button type="button" className="secondary-action" onClick={closeModal}>Cancelar</button><button type="submit" className="primary-action" disabled={saving}>{saving ? "Guardando..." : assessing ? "Guardar evaluación" : editing ? "Guardar cambios" : "Crear riesgo"}</button></div>
+    </form></div>}
+  </div>;
+}
+
+export default Riesgos;
