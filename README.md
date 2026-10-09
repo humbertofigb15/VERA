@@ -16,6 +16,7 @@
 - Reglas y pruebas de integración para el ciclo de propuestas de auditoría (HU-22).
 - Rechazo trazable de propuestas de auditoría con motivo obligatorio (HU-23).
 - Inicio, seguimiento y cierre de auditorías aprobadas con matriz 3 × 3 de riesgos (HU-09).
+- Panel principal con estadísticas, gráficas y acciones ajustadas a permisos del rol (HU-07).
 - Interfaz web para acceso, usuarios, auditoría, planificación y trimestres.
 
 ## Tecnologías
@@ -99,6 +100,10 @@ Los roles `SUPER_ADMIN` y `DIRECTOR` pueden resolver una propuesta abierta. El r
 ### HU-09: auditorías activas y matriz de riesgos
 
 La planificación captura probabilidad e impacto en una escala de 1 (bajo) a 3 (alto); la API calcula el puntaje como su producto y clasifica 1–2 como bajo, 3–4 como medio y 6–9 como alto. La matriz 3 × 3 cuenta las auditorías que están en curso por ambas dimensiones. Una auditoría solo puede iniciarse después de ser aprobada y asignada a un trimestre. `SUPER_ADMIN` o `DIRECTOR` pueden iniciar o cerrar; el inicio registra actor y fecha con avance de ejecución en 0%, y el cierre registra actor y fecha con avance en 100%. El endpoint `GET /api/planning/active` alimenta el tablero; los eventos `AUDIT_STARTED` y `AUDIT_CLOSED` aparecen en el registro de actividad. Los estados aprobada, en curso, cerrada y rechazada no permiten edición; una auditoría cerrada sale de la matriz activa y permanece en el calendario trimestral con su avance real.
+
+### HU-07: panel principal por rol
+
+`GET /api/dashboard` requiere sesión y devuelve métricas, conteos por estado, matriz activa, pendientes y permisos calculados desde el portafolio. Super Admin y Dirección ven la cola global de decisiones; Gerencia, el seguimiento de propuestas; Auditoría, solo registros asignados por `responsibleId`; Jefatura, una vista general de consulta. La interfaz muestra KPIs, barras de estado, matriz de riesgo 3 × 3 y acciones rápidas filtradas por permisos; los valores se consultan de nuevo al actualizar y no están hardcodeados. Las pruebas de integración verifican autenticación, alcance de auditoría y permisos. No se muestran horas ni hallazgos porque el modelo actual no contiene fuentes de esos datos; así se evita presentar estadísticas inventadas.
 
 CodeQL analiza JavaScript y TypeScript en los pull requests, en `main` y semanalmente. `npm audit` revisa dependencias de backend y frontend en el flujo de calidad. Dependabot revisa semanalmente dependencias npm y GitHub Actions.
 
