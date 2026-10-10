@@ -3,9 +3,6 @@ import {
   LayoutDashboard,
   ClipboardList,
   CalendarRange,
-  LayoutDashboard,
-  ClipboardList,
-  CalendarRange,
   Activity,
   FileChartColumn,
   UserCog,
@@ -14,9 +11,6 @@ import {
   ClipboardCheck,
   BellRing,
   Files,
-  ScrollText,
-  LogOut
-} from "lucide-react";
   ScrollText,
   LogOut
 } from "lucide-react";
